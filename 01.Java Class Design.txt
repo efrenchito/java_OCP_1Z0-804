@@ -1,0 +1,806 @@
+1 Java class design
+  Classes and interfaces are building blocks of an application. Efficient and effective
+  class design makes a significant impact on the overall application design.
+  The topics covered in this chapter will help you design better classes by taking you through multiple
+  examples. This chapter covers
+   . Access modifiers
+   . Method overloading
+   . Method overriding
+   . Virtual method invocation
+   . Use of the instanceof operator and casting
+   . Override methods from class Object to improve the functionality of your class
+   . How to create packages and use classes from other classes
+
+  1.1 Java access modifiers
+    [1.1] Use access modifiers private, protected and public.
+    Access modifiers control the accesibility of a class or an interface, including
+    its members (methods and variables), by other classes and interfaces within
+    the same or separate packages.
+      Access modifiers can be applied to classes, interfaces, and their members (instance
+    and class variables and methods). Local variables and method parameters can’t be
+    defined using access modifiers. An attempt to do so will prevent the code from compiling
+
+    To understand all of these access modifier we'll use the next set of classes.
+       -> see library.Book, library.CourseBook, library.Librarian, building.House and building.StoryBook
+    Library                       Building
+       Librarian                     House
+       Book <------<<extends>>------ StoryBook
+       [+isbn:String;
+        +printBook()]
+       <<extends>>
+       CourseBook
+
+    1.1.1 Public access modifier: This is the least restrictive access modifier.
+    1.1.2 Protected access modifier: Same package and subClasses
+    1.1.3 Default access (same-package access):
+     -> Note: While the package-private access is as valid as the other access levels,
+     in real projects, it often appears as the result of inexperienced developers
+     forgetting to specify the access modifier of Java components
+    1.1.4 Private access modifier
+    1.1.5 Access modifiers and Java entities
+      Can every access modifier be applied to all the Java entities? The simple answer is no.
+      Table 1.1 lists the Java entities and the access modifiers that can be used with them.
+        -> EXAM TIP Watch out for invalid combinations of a Java entity and an
+           access modifier. Such code won’t compile. <<Classes and local variables>>
+    1.1.6 Effects of changing access modifiers for existing entities
+      You can change the access modifier of a member in two ways:
+        ■ Accessibility is decreased—for example, a public member is made private (MORE RESTRICTIVE)
+        ■ Accessibility is increased—for example, a private member is made public (LESS RESTRICTIVE)
+  1.2 Overloaded methods and constructors
+    [1.3] Overload constructors and methods
+    Overloaded methods are methods with the same name but different method parameter
+    lists. In this section, you’ll learn how to create and use overloaded methods.
+
+      System.out.println(intVal);
+      System.out.println(boolVal);
+      System.out.println(name);
+
+    When you use method println(), you know that whatever you pass to it as a method
+    argument will be printed to the console. Wouldn’t it be crazy to use methods like
+    printlnInt(), printlnBool(), and printlnString() for the same functionality? I
+    think so, too.
+
+    1.2.1 Argument list
+     Overloaded methods accept different lists of arguments. The argument lists can differ
+     in terms of
+      ■  CHANGE IN THE NUMBER OF METHOD PARAMETERS
+      ■  CHANGE IN THE TYPE OF METHOD PARAMETERS
+        When you define overloaded methods with object references as parameters, their
+        classes might or might not share an inheritance relationship. When the classes don’t
+        share an inheritance relationship, there isn’t any confusion with the version of the
+        method that will be called.
+	class Employee {}
+	class CEO extends Employee {}
+	class Travel {
+	  static String bookTicket(Employee val) {
+	    return "economy class";
+	  }
+	  static String bookTicket(CEO val) {
+	    return "business class";
+	  }
+	}
+	class TravelAgent {
+	  public static void main(String... args) {
+ 	    System.out.println(Travel.bookTicket(new CEO()));
+	  }
+	}
+      ■  CHANGE IN THE POSITIONS OF METHOD PARAMETERS
+        ********>>>
+        EXAM TIP For primitive method arguments, if a call to an overloaded
+        method is dubious, the code won’t compile.
+      -> see 1Z0-804\Chapter1\TravelAgent.java
+    1.2.2 When methods can’t be defined as overloaded methods
+      .RETURN TYPE: Methods can’t be defined as overloaded methods if they only differ in their return types
+      .ACCESS MODIFIER: Methods can’t be defined as overloaded methods if they only differ in their access modifiers
+      .NONACCESS MODIFIER: Methods can’t be defined as overloaded methods if they only differ in their nonaccess modifiers
+
+      *****Rules to remember for defining overloaded methods
+      Here’s a quick list of rules to remember for the exam for defining and using overloaded methods:
+        ■ A class can overload its own methods and methods inherited from its base class.
+        ■ Overloaded methods must be defined with the same name.
+        ■ Overloaded methods must be defined with different parameter lists.
+        ■ Overloaded methods might define a different return type or access or nonaccess modifier
+    1.2.3 Overloaded constructors
+      While creating instances of a class, you might need to assign default values to some of
+      its variables and assign explicit values to the rest. You can do so by overloading the
+      constructors.
+       -> EXAM TIP Watch out for exam questions that use nonaccess modifiers with constructors. <The code won’t compile>
+
+      INVOKING AN OVERLOADED CONSTRUCTOR FROM ANOTHER CONSTRUCTOR
+         Unlike overloaded methods, which can be invoked using the name of a method, overloaded constructors
+         are invoked by using the keyword this—an implicit reference, accessible to an object, to refer to itself.
+           //Overloaded Constructor pitfalls
+             class Employee {
+               String name;
+               int age;
+               Employee() {
+                 Employee(null, 0);  //Won't compile - you can't invoke an overloaded constructor by using the class name
+               }
+               Employee(String newName, int newAge) {
+                name = newName;
+                age = newAge;
+              }
+               Employee(int newAge, String newName) {
+                 System.out.println("Overloaded Constructor");
+                 this(newName, newAge);  //Won't compile-call to overloaded constructor must be first statement in constructor
+               }
+            }
+
+       *****Rules to remember for defining overloaded constructors
+        Here’s a quick list of rules to remember for the exam for defining and using overloaded constructors:
+         ■ A constructor can call another overloaded constructor by using the keyword this.
+         ■ A constructor can’t invoke a constructor by using its class’s name.
+         ■ If present, the call to another constructor must be the first statement in a constructor.
+         ■ Overloaded constructors must be defined using different argument lists.
+         ■ Overloaded constructors can’t be defined by just a change in the access modifiers.
+         ■ Overloaded constructors can be defined using different access modifiers.
+      INSTANCE INITIALIZERS
+       Apart from constructors, you can also define an instance initializer
+       You can define multiple instance initializers in your class.
+       Each instance initializer is invoked when an instance is created, in the order
+       they’re defined in a class. They’re invoked before a class constructor is invoked.
+       -> Initializers can be used to initialize variables of anonymous classes that can’t define constructors.
+        //Initializers Example
+          class Pencil {
+            public Pencil() {
+              System.out.println("Pencil:constructor1");
+            }
+            public Pencil(String a) {
+              System.out.println("Pencil:constructor2");
+            }
+            {
+              System.out.println("Pencil:init1");
+            }
+            {
+              System.out.println("Pencil:init2");
+            }
+            public static void main(String[] args) {
+              new Pencil();
+              new Pencil("aValue");
+            }
+          }
+          The output of the preceding code is:
+            Pencil:init1
+            Pencil:init2
+            Pencil:constructor1
+            Pencil:init1
+            Pencil:init2
+            Pencil:constructor2
+
+        -> EXAM TIP If a parent or child class defines static initializer block(s), they
+           execute before all parent and child class constructors and instance initializers—
+           first for the parent and then for the child class.
+  1.3 Method overriding and virtual method invocation
+    [1.2] Override methods
+    [1.5] Use virtual method invocation
+    Method overriding is an object-oriented programming (OOP) language feature
+    that enables a derived class to define a specific implementation of an existing base
+    class method to extend its own behavior. The static methods of a base class can’t be
+    overridden, but they can be hidden by defining methods with the same signature
+    in the derived class.
+      -> METHOD SIGNATURE: method name and number and types of method parameters
+
+    A method that can be overridden by a derived class is called a virtual method.
+    But beware: this term is used in other languages like C and C++.
+
+    :::NOTE A base class method is referred to as the overridden method and the
+    derived class method is referred to as the overriding method.
+
+    1.3.1 Need of overridden methods
+      A derived class can inherit the behavior and properties of its base class but
+      still be different in its own manner—by defining new variables and methods.
+      A derived class can also choose to define a different course of action for its
+      base class method by overriding it.
+
+       -> see BookExample.java
+    1.3.2 Correct syntax of overriding methods
+      (Method declaration isn’t the same as method signature.)
+       -> Comparison of method components and their acceptable values for an overriding method
+          Access Modifier:    Define same access or less restrictive access than method review() in the base class.
+          Nonaccess modifier: Overriding method can use any nonaccess modifier for an overridden method.
+                              A nonabstract method can also be overridden to an abstract method.
+                              But a final method in the base class cannot be overridden.
+                              A static method cannot be overridden to be nonstatic.
+          Return Type:        Define the same or a subtype of the return type used in the base class method (covariant return types).
+          Method name:        Exact match
+          Parameter List:     Exact match
+          Exceptions thrown:  Throw none, same, or a subclass of the exception thrown by the base class method.
+
+      ACCESS MODIFIERS
+        A derived class can assign the same or more access but not a weaker access to the overriding
+        method in the derived class:
+
+        class Book {
+          protected void review(int id, List names) {}
+        }
+        class CourseBook extends Book {
+          void review(int id, List names) {}  //Won’t compile; overriding methods in derived classes can’t use a weaker access.
+        }
+      NONACCESS MODIFIERS
+        A derived class can’t override a base class method marked final:
+        class Book {
+          final void review(int id, List names) {}
+        }
+        class CourseBook extends Book {
+          void review(int id, List names) {} //Won’t compile; final methods can’t be overridden.
+        }
+      ARGUMENT LIST AND COVARIANT RETURN TYPES
+       To override a method, the parameter list of the methods in the base and derived classes must be exactly the same.
+       When the overriding method returns a subclass of the return type of the overridden
+       method, it’s known as a covariant return type. It you try to use covariant types in the argument list,
+       you’ll end up overloading the methods and not overriding them.
+
+         class Book {
+           void review(int id, List names) throws Exception {
+             System.out.println("Base:review");
+           }
+         }
+         class CourseBook extends Book {
+           void review(int id, ArrayList names) throws IOException {
+             System.out.println("Derived:review");
+           }
+         }
+      EXCEPTIONS THROWN
+       An overriding method must either declare to throw no exception, the same exception,
+       or a subtype of the exception declared to be thrown by the base class method, or
+       else it will fail to compile.
+        //ExcepionsThrown overriding example
+          class Book {
+            void review() throws Exception {}
+            void read() throws Exception {}
+            void close() throws Exception {}
+            void write() throws NullPointerException {}
+            void skip() throws IOException {}
+            void modify() {}
+          }
+          class CourseBook extends Book {
+            void review() {} //Compiles: declares to throw no exception
+            void read() throws IOException {} //Compiles: declares to throw a subclass exception than declared to be thrown by overriden method
+            void close() throws Error {} //Compiles: an overriding method can declare to throw any error
+            void write() throws RuntimeException {} //Compiles: an overriding method can declare to throw any Runtime Exception
+            void skip() throws Exception {} //Doesn't compile: Overriding method can't declare to throw broader exceptions
+            void modify() throws IOException {} //Doesn’t compile; declares to throw IOException. Overriding method can’t declare to throw a checked exception if overridden method doesn’t.
+          }
+        -> EXAM TIP An overriding method can declare to throw any Runtime-Exception or Error, even if the overridden method doesn’t.
+       +Comparing Exceptions to Monsters
+        OVERRIDEN METHOD:  WithException -> OVERRIDING METHOD: NONE, Runtime-Exception, Error, SAME, NARROWER
+                           NONE          -> OVERRIDING METHOD: NONE, Runtime-Exception, Error
+    1.3.3 Can you override all methods from the base class or invoke them virtually?
+     The simple answer is no.You can override only the following methods from the base class:
+      ■ Methods accessible to a derived class
+        The accessibility of a method in a derived class depends on its access modifier.
+      ■ Nonstatic base class methods
+        If a derived class defines a static method with the same name and signature as the one
+        defined in its base class, it hides its base class method and doesn’t override it.
+
+          class Book {
+            static void printName() {
+              System.out.println("Book");
+            }
+          }
+          class CourseBook extends Book {
+            static void printName() {
+              System.out.println("CourseBook");
+            }
+          }
+          class BookExampleStaticMethod {
+            public static void main(String[] args) {
+              Book base = new Book();
+              base.printName();  //Prints "Book"
+              Book derived = new CourseBook();
+              derived.printName(); //Prints "Book"
+            }
+          }
+    1.3.4 Identifying method overriding, overloading, and hiding
+      It’s easy to get confused with method overriding, overloading, and hiding.
+      -> EXAM TIP When a class extends another class, it can overload, override,
+         or hide its base class methods. A class can’t override or hide its own methods—
+         it can only overload its own methods.
+      -> see 1TwistInTheTale(1.3)
+    1.3.5 Can you override base class constructors or invoke them virtually?
+      The simple answer is no. Constructors aren’t inherited by a derived class.
+      -> EXAM TIP Constructors can’t be overridden because a base class constructor
+       isn’t inherited by a derived class.
+  1.4 Overriding methods of class Object
+    [1.6] Override methods from the Object class to improve the functionality of your class
+
+    All the classes in java—classes from the Java API, user-defined classes, or classes from
+    any other API—extend class java.lang.Object, either implicitly or explicitly.
+    Let’s take a look at its nonfinal and final methods:
+      java.lang.Object
+        Nonfinal methods: clone(); equals(); hashCode(); toString(); finalize();
+        Final methods:    getClass(); notifyAll(); wait(); notify();
+    Because the final methods can’t be overridden, I’ll discuss the nonfinal methods of class Object in this section.
+
+    1.4.1 Overriding method toString()
+      Method toString() is called when you try to print out the value of a reference variable or use a reference variable in a concatenation operator
+      The default implementation of method toString() returns the name of the class, followed by @ and the hash code of the object it represents.
+
+        public String toString() {
+          return getClass().getName() + "@" + Integer.toHexString(hashCode());
+        }
+
+      If a class defines a lot of instance variables, method toString()might include only the
+      important ones—that is, the ones that provide its concise description.
+    1.4.2 Overriding method equals()
+      Method equals() is used to determine whether two objects of a class should be considered equal or not.
+      The default implementation of method equals() in class Object compares the object
+      references and returns true if both reference variables refer to the same object, or
+      false otherwise. In essence, it only returns true if an object is compared to itself. Following
+      is the default implementation of method equals() in class java.lang.Object:
+
+        public boolean equals(Object obj) {
+          return (this == obj);
+        }
+
+      The exam will question you on the following points:
+      ■ THE NEED TO OVERRIDE METHOD EQUALS()
+         You need to override method equals() for objects that you wish to equate logically,
+         which normally depends on the state of an object (that is, the value of its instance variables).
+
+         Class String overrides method equals() to check whether two String objects define the exact same sequence of characters:
+            String name1 = "Harry";
+            String name2 = new String ("Harry");
+            System.out.println(name1.equals(name2));
+
+         //Example equals overriding
+         class Course {
+           String title;
+           int duration;
+           public boolean equals(Object o) {
+             if (o != null && o instanceof Course) {
+               Course c = (Course)o;
+               return (title.equals(c.title) && duration==c.duration);
+             }
+             else
+               return false;
+             }
+         }
+
+         RULES FOR OVERRIDING METHOD EQUALS()
+          Method equals() defines an elaborate contract (set of rules), as follows (straight
+          from the Java API documentation). For any non-null reference value x, y, and z:
+            1 It’s reflexive: x.equals(x) should return true.
+            2 It’s symmetric: x.equals(y) should return true if and only if y.equals(x) returns true.
+            3 It’s transitive: if x.equals(y) returns true and y.equals(z) returns true, then x.equals(z) should return true.
+            4 It’s consistent: multiple invocations of x.equals(y) consistently return true or consistently return false
+            5 A non-null object can never be equal to null: x.equals(null) should return false.
+      ■ CORRECT AND INCORRECT OVERRIDING OF METHOD EQUALS()
+         To override method toString() correctly, follow the method overriding rules defined
+         in section 1.3. Note that the type of parameter passed to equals() is Object. Watch
+         out for exam questions that seem to override equals(), passing it to a parameter type
+         of the class in which it’s defined.
+          //Example equals() overloaded
+            class Course {
+              String title;
+              Course(String title) {
+                this.title = title;
+              }
+              public boolean equals(Course o) {
+                return title.equals(o.title);
+              }
+              public static void main(String args[]) {
+                Object c1 = new Course("eJava");
+                Object c2 = new Course("eJava");
+                System.out.println(c1.equals(c2));
+              }
+            }
+
+         -> EXAM TIP: Use Object as the parameter type to equals(). Using any other
+            type will overload equals().
+      ■ APPROPRIATE AND INAPPROPRIATE OVERRIDING OF METHOD EQUALS()
+         An inappropriately overriden method equals() doesn't mean compilation failure
+           -> see University1.java
+             The code prints true for c1.equals(s1) and false for s1.equals(c1),
+             which is a clear violation of equals()’s symmetric contract
+           -> see University2.java
+             The code prints true for c1.equals(c2) and for c2.equals(c3), but false  for c1.equals(c3) fails the transitive rule.
+    1.4.3 Overriding method hashCode()
+      First, method hashCode() isn’t called by method equals() or vice versa. The contract
+      of methods equals() and hashCode() mentions that both these methods should be
+      overridden if one of them is overridden.
+
+      THE NEED TO OVERRIDE METHOD HASHCODE()
+        Method hashCode() returns a hash-code value for an object, which is used to efficiently
+        store and retrieve values in collection classes that use hashing algorithms, such
+        as HashMap. Hashing algorithms identify the buckets in which they would store the
+        objects and from which they would retrieve them. A well-written method hashCode()
+        ensures that objects are evenly distributed in these buckets. Objects with the same
+        hash-code values are stored in the same bucket. To retrieve an object, its bucket is
+        identified using its hash-code value. If the bucket contains multiple objects, method
+        equals() is used to find the target object.
+
+        To understand how this works, let’s create a class called MyNumber, which contains a
+        primitive long as its field. It returns a sum of all the individual digits of its field as its
+        method hashCode(), as follows
+        //hashCode example:
+          class MyNumber {
+            long number;
+            MyNumber(long number) {this.number = number;}
+            public int hashCode() {
+              int sum = 0;
+              long num = number;
+              do {
+                sum += num % 10; num /= 10;
+              }
+              while( num != 0 );
+              return sum;
+            }
+          }
+
+          Map<MyNumber, String> map = new HashMap<>();
+          MyNumber num1 = new MyNumber(1200);  //Hash-code value 3
+          MyNumber num2 = new MyNumber(2500);  //Hash-code value 7
+          MyNumber num3 = new MyNumber(57123); //Hash-code value 18
+          map.put(num1, "John");
+          map.put(num2, "Mary");
+          map.put(num3, "Sam");
+          -> With the preceding keys, each bucket contains only one entry. When you request the HashMap to retrieve a value,
+          it would find the corresponding bucket using the key’s hash-code value and then it retrieves the value.
+
+          MyNumber num4 = new MyNumber(57123);
+          map.put(num4, "Kim");
+          -> Now the bucket with the hash-code value 18 has two String values. In this case, Hash-
+          Map would use the hashCode() value to identify the bucket and then call method
+          equals() to find the correct object. This explains why distinct hash-code values for
+          distinct values are preferred.
+      OVERRIDING METHOD HASHCODE() CORRECTLY
+        Here’s the signature of method hashCode() as defined in class Object:
+          public native int hashCode();
+        -> EXAM TIP: Watch out for exam questions that use the incorrect case for hash-Code()—the correct name uses uppercase C.
+
+        1 If two objects are equal according to method equals(Object), then calling
+          method hashCode() on each of the two objects must produce the same integer result.
+        2 It’s not required that if two objects are unequal according to method equals
+          (java.lang.Object), that calling method hashCode() on each of the two objects
+          must produce distinct integer results.
+
+        ** NOTE Using a system-dependent value (like a memory address) is allowed
+        in hashCode(). But objects of such classes can’t be used as keys in distributed
+        systems because equal objects (across systems) will return different
+        hash-code values.
+
+      OVERRIDING METHOD HASHCODE() INAPPROPRIATELY
+       It’s important for method hashCode() that two objects return the same value, if they’re equal as per method equals()
+       in order to be retrieved from a HashMap
+         -> see MyNumber.java
+         -> see MyNumber2.java
+           The hashCode() in MyNumber doesn’t return the same values for its equal objects.
+         -> see MyNumber3.java
+           In this example code, when you add key-value num1, "Shreya" to HashMap, you most
+           likely won’t be able to retrieve Shreya using the same key,
+      INEFFICIENT OVERRIDING OF HASHCODE()
+       Returns the same hash-code value for all the objects. This essentially stores all the values in the same bucket,
+       and if objects of this class are used as keys in class HashMap and reduces it to a linked list, drastically
+       reducing its performance.
+        //hashCode-sameValue:
+          class MyNumber {
+            long number;
+            MyNumber(long number) {this.number = number;}
+            public int hashCode() {
+              return 1654;
+            }
+          }
+
+       -> EXAM TIP: Read the questions on method hashCode() carefully. You
+        might be questioned on incorrect, inappropriate, or inefficient overriding
+        of hashCode().
+      EFFECTS OF USING MUTABLE OBJECTS AS KEYS
+        If the value of a field  is changed during the course of the application
+        you’ll never be able to retrieve the corresponding value in the HashMap.
+        -> see MyNumber4.java
+          The field used to determine the hash code of an object is modified in main().
+          With the modified key, HashMap won’t be able to retrieve its corresponding object.
+  1.5 Casting and the instanceof operator
+    1.5.1 Implicit and explicit casting
+      -> see Shopping.java
+        public interface Printable {
+          void print();
+        }
+        public class ShoppingItem {
+          public void description() {
+            System.out.println("Shopping Item");
+          }
+        }
+        class Chair extends ShoppingItem {
+          public void description() {
+            System.out.println("Chair");
+          }
+        }
+        public class Book extends ShoppingItem implements Printable {
+          public void description() {
+            System.out.println("Book");
+          }
+          public void print() {
+            System.out.println("Printing book");
+          }
+        }
+        class Shopping {
+          public static void main(String args[]) {
+            Printable printable = new Book();
+            //Opt1:>>>Won’t compile—can’t access method description() in Printable.<<<
+            printable.description();
+            //   Because the type of the reference variable printable is Printable, the compiler refers
+            //   to the definition of the interface Printable when you call method description() on
+            //   printable.
+
+            //Opt2:>>>
+            ((Book)printable).description();
+            //   You need to inform the compiler you know what you’re doing by using an explicit cast
+
+          }
+        }
+    1.5.2 Combinations of casting
+      ASSIGNMENT WITH IMPLICIT CASTING
+       -> EXAM TIP: In the absence of explicit casting, you’ll never get ClassCast-Exception—a RuntimeException.
+        + Implicit upcasting is allowed
+          public class UpcastWithImplicitCasting {
+            public static void main(String[] arguments) {
+              Book book = new Book();
+              Chair chair = book; //Won’t compile—both Book and Chair extend ShoppingItem, but don’t belong to a single line of inheritance.
+              ShoppingItem shoppingItem = book; //Ok - a Book is a ShoppingItem
+              Printable printable = book; //Ok - a Book is printable
+              Object object = book; //Ok - a Book is an Object
+              Chair chair2 = new Chair();
+              Printable printable2 = chair; //Won't compile - a Chair isn't Printable
+            }
+          }
+        + Implicit downcasting isn't allowed
+          public class DowncastWithImplicitCasting {
+            public static void main(String[] arguments) {
+              ShoppingItem shoppingItem3 = new ShoppingItem();
+
+              Book book3 = shoppingItem3; //Won’t compile—a ShoppingItem isn’t necessarily a book
+              Chair chair3 = shoppingItem3; //Won't compile-a ShoppingItem isn't necessarily a Chair
+              Printable printable3 = shoppingItem3; //Won't compile-a ShoppingItem doesn't implement Printable
+
+              Object object3 = shoppingItem3; //Okay - a chair is an Object
+            }
+          }
+      ASSIGNMENT WITH EXPLICIT CASTING
+       Java recommends programming to an interface, which implies using reference
+       variables of a base class or implementing interfaces to refer to the actual objects. But
+       you might need to cast an object referred by a base class to its specific type.
+        //DowncastWithExplicitCasting
+          public class DowncastWithExplicitCasting {
+            static void downCast(ShoppingItem item) {
+              Book book = (Book)item;    //(1)
+              Chair chair = (Chair)item; //(1)Compiles with Casting - will throw ClassCastException; can't downcast to subclass type
+              Printable printable = (Printable)item; //Compiles with Casting - will throw ClassCastException; doesn't implement Printable
+            }
+            public static void main(String args[]) {
+              ShoppingItem item = new ShoppingItem();
+              downCast(item);
+            }
+          }
+
+       ***NOTE For the exam, you need to be very clear whether an explicit cast will
+       result in a compilation error or a runtime exception (ClassCastException).
+
+        //FinalcastToInterface -> Compilation error
+          interface Printable {}
+          final class Engineer {}
+          class Factory {
+          public static void main(String[] args) {
+            Engineer engineer = new Engineer();
+            Printable printable = (Printable)engineer; //Won’t compile—can’t cast final class Engineer’s instance to Printable.
+            }
+          }
+        -> EXAM TIP Class String is defined as a final class. Watch out for questions
+           that explicitly cast String objects to interfaces they don’t implement.
+           They won’t compile.
+
+        //null to a type -> No compilation error/runtime exception
+          static void castNull() {
+            Book book = (Book)null;
+            Chair chair = (Chair)null;
+            Printable printable = (Printable)null;
+          }
+        ->  EXAM TIP You can explicitly cast null to any type. It won’t generate a
+            compilation error or throw a ClassCastException.
+      ACCESS OF MEMBERS WITH EXPLICIT CASTING
+        You can access methods and variables of explicitly casted variables in single or multiple
+        lines of code.
+
+        -> EXAM TIP If you cast an instance to a class outside its inheritance tree,
+        you’ll get a compiler error. If you cast an instance to a class within its
+        inheritance tree, but the types don’t match at runtime, the code will
+        throw a ClassCastException.
+
+        Points to remember for casting
+          ■ An instance can be implicitly casted to its superclasses or interfaces that it implements.
+          ■ An instance of a nonfinal class can be explicitly casted to any interface at compile time.
+          ■ Classes in the same inheritance tree can be casted to each other using explicit casting at compile time.
+          ■ Objects of classes that don’t form part of the same inheritance tree cannot be casted.
+          ■ Casting to an interface is successful at runtime if the class implements the interface.
+          ■ Casting to a derived class type is successful at runtime if the casted object is actually a type of the derived class to which it’s casted.
+    1.5.3 Using the instanceof operator
+      The instanceof operator is used to logically test whether an object is a valid type of a
+      class or an interface. You should proceed with explicit casting only if this operator
+      returns true, or you risk running into a ClassCastException at runtime.
+       //instanceof
+        class Course {
+          String title;
+          Course(String t) {title = t;}
+          public boolean equals(Object obj) {
+            if (obj instanceof Course) {
+              Course c = (Course)obj;
+              return (title.equals(c.title));
+            }
+            else
+              return false;
+          }
+        }
+
+      -> EXAM TIP The instanceof operator never throws a runtime exception; it
+      returns either true or false. If the instanceof operator uses inconvertible
+      types, the code won’t compile
+
+      -> EXAM TIP The literal value null isn’t an instance of any class. So
+      <referenceVariable> instanceof <ClassName> will return false whenever
+      the <referenceVariable> is null. (see FinalClass.java line 9,10)
+
+      //Unrelated -> wont Compile
+        class Course {}
+        class Student {}
+        public class TestInstanceof {
+          public static void main(String[] args) {
+            Course c = new Course();
+            Student s = new Student();
+            System.out.println(c instanceof Student); //referenceVariable unrelated with ClassName -> Won't Compile
+          }
+        }
+
+      ***** Using instanceof versus getClass in method equals()
+       Using instanceof versus getClass is a common subject of debate about proper use
+       and object orientation in general (including performance aspects, design patterns,
+       and so on). Though important, this discussion is beyond the scope of this book. If
+       you’re interested in further details, refer to Josh Bloch’s book Effective Java.
+  1.6 Packages
+    [1.7] Use package and import statements
+    1.6.1 The need for packages
+     You can use packages to group together a related set of enums, classes, and interfaces.
+     Packages also provide namespace management.
+      -> If you don’t include an explicit package statement in a class or an interface, it’s part of a default package.
+    1.6.2 Defining classes in a package using the package statement
+      package certification;
+      class ExamQuestion {
+        //..code
+      }
+
+      package com.oracle.javacert.associate; com.oracle.javacert.associate
+      class ExamQuestion {
+        // variables and methods
+      }
+
+      NOTE: fully qualified name for a class or interface is formed by prefixing
+      its name with its package name (separated by a period). The fully
+      qualified name of the ExamQuestion class is certification.ExamQuestion
+      and com.oracle.javacert.associate.ExamQuestion
+
+      ***Rules to remember about packages
+        Here are a few important rules about packages:
+        ■ Per Java naming conventions, package names should all be in lowercase.
+        ■ The package and subpackage names are separated using a dot (.).
+        ■ Package names follow the rules defined for valid identifiers in Java.
+        ■ For packaged classes and interfaces, the package statement is the first statement in a Java source file (a .java file).
+          The exception is that comments can appear before or after a package statement.
+        ■ There can be a maximum of one package statement per Java source code file (.java file).
+        ■ All the classes and interfaces defined in a Java source code file will be defined in the same package.
+          There’s no way to define them in different packages.
+
+      SETTING THE CLASS PATH FOR CLASSES IN PACKAGES
+       To enable the JRE to find your classes, interfaces, and enums defined in packages, add
+       the base directory that contains your Java code to the class path.
+    1.6.3 Using simple names with import statements
+     The import statement enables you to use simple names instead of using fully qualified
+     names for classes and interfaces defined in separate packages.
+
+      package office;
+      class Cubicle {
+        home.LivingRoom livingRoom;
+      }
+
+      package office;
+      import home.LivingRoom;
+      class Cubicle {
+        LivingRoom livingRoom;
+      }
+    1.6.4 Using packages without using the import statement
+      Classes in the java.lang package are automatically imported in all the Java classes,
+      interfaces, and enums. To use simple names for classes, interfaces, and enums from
+      other packages, you should use the import statement. It’s possible to use a class or
+      interface from a package without using the import statement by using its fully qualified
+      name.
+    1.6.5 Importing a single member versus all members of a package
+      You can import either a single member or all members (classes and interfaces) of a package
+      using the import statement.
+
+        import certification.ExamQuestion;  //Imports only ExamQuestion
+        class AnnualExam {
+          ExamQuestion eq;
+          MultipleChoice mc;
+        }
+
+        import certification.*;  //Imports all classes and interfaces from certification
+        class AnnualExam {
+          ExamQuestion eq;
+          MultipleChoice mc;
+        }
+    1.6.6 The import statement doesn’t import the whole package tree
+      You can’t import classes from a subpackage by using an asterisk in the import statement.
+    1.6.7 Importing classes from the default package
+      What happens if you don’t include a package statement in your class or interface? In
+      this case, they become part of a default, no-name package. This default package is automatically
+      imported in the Java classes and interfaces defined within the same directory
+      on your system.
+
+      -> EXAM TIP Members of a named package can’t access classes and interfaces
+      defined in the default package.
+    1.6.8 Static imports
+      The static members are usually accessed by prefixing their name with the class or interface
+      names. By using static import, you can drop the prefix and just use the name of
+      the static variable or method.
+
+      -> This feature is called static imports, but syntax is import static.
+  REVIEW NOTES:
+   This section lists the main points covered in this chapter:
+   + Java access modifiers
+     ■ The access modifiers control the accessibility of your class and its members outside the class and package.
+     ■ Access modifiers defined by Java are public, protected, and private. In the absence of an explicit access modifier,
+       a member is defined with the default access level.
+     ■ The public access modifier is the least restrictive access modifier.
+     ■ Classes and interfaces defined using the public access modifier are accessible to related and unrelated classes outside the package in which they’re defined.
+     ■ The members of a class defined using the protected access modifier are accessible to classes and interfaces defined in the same package and to all derived
+       classes, even if they’re defined in separate packages.
+     ■ The members of a class defined without using an explicit access modifier are defined with package accessibility (also called default accessibility).
+     ■ The members with package access are accessible only to classes and interfaces defined in the same package.
+     ■ A class defined using default access can’t be accessed outside its package.
+     ■ The private members of a class are only accessible to itself.
+     ■ The private access modifier is the most restrictive access modifier.
+     ■ A top-level class, interface, or enum can only be defined using the public or default access. They can’t be defined using protected or private access.
+     ■ Method parameters and local variables can never be defined using an explicit access modifier. They don’t have access control–only scope.
+       Either they’re in scope or out of scope.
+     ■ If accessibility of an existing Java entity or its member is decreased, it can break others’ code.
+   + Overloaded methods and constructors
+     ■ Overloaded methods are methods with the same name but different method parameter lists.
+     ■ A class can overload its own methods and inherited methods from its base class.
+     ■ Overloaded methods accept different lists of arguments.
+     ■ The argument lists of overloaded methods can differ in terms of change in the number, type, or position of parameters that they accept.
+     ■ Overloaded methods are bound at compile time. Unlike overridden methods they’re not bound at runtime.
+     ■ A call to correctly overloaded methods can also fail compilation if the compiler is unable to resolve the call to an overloaded method.
+     ■ Overloaded methods might define a different return type or access or nonaccess modifier, but they can’t be defined
+       with only a change in their return types or access or nonaccess modifiers.
+     ■ Overloaded constructors must be defined using different argument lists.
+     ■ Overloaded constructors can’t be defined by just a change in the access modifiers.
+     ■ Overloaded constructors can be defined using different access modifiers.
+     ■ A constructor can call another overloaded constructor by using the keyword this.
+     ■ A constructor can’t invoke another constructor by using its class’s name.
+     ■ If present, the call to another constructor must be the first statement in a constructor.
+   + Method overriding and virtual method invocation
+     ■ Method overriding is an OOP language feature that enables a derived class to define a specific implementation
+       of an existing base class method to extend its own behavior.
+     ■ A derived class can override an instance method defined in a base class by defining an instance method with the same method signature.
+     ■ Whenever you intend to override methods in a derived class, use the annotation @Override. It will warn you if a method can’t be overridden
+       or if you’re actually overloading a method rather than overriding it.
+     ■ Overridden methods can define the same or covariant return types.
+     ■ A derived class can’t override a base class method to make it less accessible.
+     ■ Overriding methods must define exactly the same method parameters; the use of a subclass or parent class results in overloading methods.
+     ■ Static methods can’t be overridden. They’re not polymorphic and they’re bound at compile time.
+     ■ In a derived class, a static method with the same signature as that of a static method in its base class hides the base class method.
+     ■ A derived class can’t override the base class methods that aren’t accessible to it, such as private methods.
+     ■ Constructors cannot be overridden because a base class constructor isn’t inherited by a derived class.
+     ■ A method that can be overridden by a derived class is called a virtual method.
+     ■ Virtual method invocation is invocation of the correct method–determined using the object type and not its reference.
+   + Java packages
+     ■ You can use packages to group together a related set of classes and interfaces.
+     ■ The package and subpackage names are separated using a period.
+     ■ Classes and interfaces in the same package can access each other.
+     ■ An import statement allows the use of simple names for classes and interfaces defined in other packages.
+     ■ You can’t use the import statement to access multiple classes or interfaces with the same names from different packages.
+     ■ You can import either a single member or all members (classes and interfaces) of a package using the import statement.
+     ■ You can’t import classes from a subpackage by using the wildcard character, an asterisk (*), in the import statement.
+     ■ A class from the default package can’t be used in any named package, regardless of whether it’s defined within the same directory or not.
+     ■ You can import an individual static member of a class or all its static members by using an import static statement.
+     ■ An import statement can’t be placed before a package statement in a class. Any attempt to do so will cause the compilation of the class to fail.
+     ■ The members of the default package are accessible only to classes or interfaces defined in the same directory on your system.

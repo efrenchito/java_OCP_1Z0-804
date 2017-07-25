@@ -1,0 +1,807 @@
+02.Advanced Class Design
+  This chapter covers
+    ■ Abstract classes
+    ■ Keywords static and final
+    ■ Enumerated types
+    ■ Nested and inner classes
+
+  2.1 Abstract classes and their application
+   [2.1] Identify when and how to apply abstract classes
+   [2.2] Construct abstract Java classes and subclasses
+   
+   -> EXAM TIP Take note of the relationship between an exam objective
+   heading and its subobjectives. For example, the topics of using the
+   static and final keywords, using enumerated types, and creating toplevel
+   and nested classes are included within the main objective advanced
+   class design. So, apart from using the correct syntax of all of these, the
+   exam will query you on the impact of their use on the design of a class
+   and an application.
+      
+    2.1.1 Identify abstract classes
+      +Abstract Class
+       Defines Abstract and non abstract methods, and can define also attribute variables.
+      
+      +Interface
+        When is an abstract base class fit to be defined as an interface? 
+         Interfaces can be defined only when no implementation of any method is provided. 
+         Also, an interface can define only constants, which can’t be reassigned another value by the implementing classes.
+
+    2.1.2 Construct abstract classes and subclasses
+     -> EXAM TIP It isn’t obligatory for abstract classes to define abstract methods.
+     Abstract methods must not define a body.
+     
+     -> EXAM TIP An abstract method can’t be defined in a concrete class. It can
+     be defined in an abstract class only.
+     
+         abstract class Animal {
+           protected String food;
+           protected double avgLife;
+
+           Animal(String food, double avgLife){
+             this.food = food;
+             this.avgLife = avgLife;
+           }
+
+           abstract void eat();
+
+           void live() {
+             System.out.println("Natural habitat : forest");
+           }
+         }
+         
+         class Lion extends Animal{
+           Lion(String food, double avgLife) {
+             super(food, avgLife);
+           }
+           void eat() {
+             System.out.println("Lion-hunt " + food);
+           }
+         }
+         
+         class Elephant extends Animal{
+           Elephant(String food, double avgLife) {
+             super(food, avgLife);
+           }
+           void eat() {
+             System.out.println("Elephant-method eat");
+           }
+           void moveTrunk() {
+             System.out.println("Elephant-method moveTrunk");
+           }
+         }
+
+      -> EXAM TIP Notice the power of base class constructors to ensure that
+      all derived class constructors pass them a value. The base class Animal
+      defines only one constructor that accepts a value for its instance variables
+      food and avgLife. Because a derived class constructor must call its base
+      class’s constructor, classes Lion and Elephant define a constructor that
+      calls Animal’s constructor.
+
+      -> EXAM TIP An abstract method can’t be defined in a concrete class. It can
+      be defined in an abstract class only.
+     
+    2.1.3 Understand the need for abstract classes
+      You need an abstract class to pull out and group together the common properties and
+      behavior of multiple classes—the same reason you need a nonabstract base class. You
+      define a base class as an abstract class to prevent creation of its instances. As the creator, you
+      think that it doesn’t include enough details to create its own objects. When you define
+      abstract methods in a base class, it forces all its nonabstract derived classes to implement
+      the incomplete functionality (abstract methods) in their own unique manner.
+
+      -> EXAM TIP Abstract classes make a point loud and clear: they force the concrete
+      derived classes to implement a base class’s abstract methods, in their own unique manner
+      
+    2.1.4 Follow the dos and don’ts of creating and using abstract classes
+     - DON’T CREATE AN ABSTRACT CLASS ONLY TO PREVENT CREATION OF ITS OBJECTS  -> java.lang.Math defines it's constructor as private
+     - DON’T MAKE AN ABSTRACT CLASS IMPLEMENT INTERFACES THAT RESULT IN INVALID METHOD IMPLEMENTATION
+     - DON’T CREATE OBJECTS OF AN ABSTRACT CLASS
+     - DON’T DEFINE AN ABSTRACT CLASS AS A FINAL CLASS
+     - DON'T FORCE AN ABSTRACT CLASS TO IMPLEMENT ALL METHODS FROM THE INTERFACE(S) IT IMPLEMENTS
+     - DO USE AN OBJECT OF AN ABSTRACT CLASS TO REFER TO OBJECTS OF ITS NONABSTRACT DERIVED CLASSES
+
+    2.1.5 Compare abstract classes and concrete classes
+    
+     Comparison Category                 Abstract  Concrete
+                                           class    class
+      Create a new type                      ✓        ✓
+      Use as base class                      ✓        ✓
+      Extend another class                   ✓        ✓
+      Implement interfaces                   ✓        ✓
+      Define attributes and concrete methods ✓        ✓
+      Require at least one constructor to be 
+        called by its derived classes        ✓        ✓
+      Define abstract methods                ✓        ✗
+      Allow object creation                  ✗        ✓
+      
+      Rules to remember for creating abstract classes
+       ■ An abstract class must be defined by using the keyword abstract.
+       ■ An abstract class can extend any other abstract or concrete class and implement other interfaces.
+       ■ An abstract class can define multiple constructors.
+       ■ An abstract class can define instance and static variables.
+       ■ An abstract class can define instance and static methods.
+       ■ An abstract class might not necessarily define an abstract method and can exist without any abstract method.
+       ■ A class can’t define an abstract static method.
+       ■ Don’t create an abstract class just to prevent creation of its instances.
+       ■ Don’t make an abstract class implement interfaces that result in incorrect overloaded or overridden methods.
+
+      Rules to remember for subclassing an abstract class
+       ■ A concrete subclass must implement all the abstract methods in its abstract superclass(es).
+       ■ An abstract subclass might not implement all the abstract methods in its abstract superclass(es).
+       ■ A subclass must call at least one constructor from its superclass.
+
+  2.2 Static and final keywords
+   [2.3] Use the static and final keywords
+   
+   Defining a class as a final class prevents it from being extended. Similarly, a static variable
+   or method can be accessed without instances of its class; the variable or method is
+   available after its class is loaded into memory. These are a few examples of how the
+   nonaccess modifiers static and final change the default behavior of a Java entity.
+   
+   For the exam, you need to understand the need for defining static and final members
+   (classes, methods, initializer blocks, and variables) together with their correct definition
+   and use. You also need to know the implications of defining nonstatic/nonfinal members
+   as static/final members, and vice versa.
+   
+   2.2.1 Static modifier
+    You can define variables, methods, nested classes, and nested interfaces as static members.
+    They belong to a class and not to instances. They can be accessed soon after
+    their class is loaded into memory. Top-level classes, interfaces, and enums can’t be
+    defined as static entities.
+    
+    -> WARNING: Watch out for code that declarest top-Level classes, Interfacess and Enums as static members.
+    Such code won't compile.
+    
+    STATIC VARIABLES
+     Static variables belong to a class and are shared by all its instances. Their value is the
+     same for all instances of their class. A static class variable is created when its class is
+     loaded into memory by the JVM. It can exist and is accessible even if no instances of
+     the class exist.
+     Because the same value of a static class variable is shared across all the instances of
+     a class, if modified, the same modified value is reflected across all instances.
+     
+     -> EXAM TIP Unlike instance variables, which are initialized for each
+     instance, static class variables are initialized only once, when they are
+     loaded into memory. The default variable values are false for boolean;
+     '\u0000' for char; 0 for byte; short, int, 0L for long; 0.0F for float;
+     0.0D for double; and null for objects.
+     
+     -> EXAM TIP You can access a static member by using the name of its class
+     or any of its instances. All these approaches refer to the same static member.
+     The preferred approach is to use a class name; otherwise, a static
+     member seems to be tied to an instance, which is incorrect.
+     
+     -> see StaticLesson1.java
+     
+     A combination of the static and final nonaccess modifiers is used to define constants
+     
+    STATIC METHODS
+     Static methods don’t need instances of a class. They can be called even if no instance
+     of the class exists. You define static methods to access or manipulate static class variables.
+     The static methods can’t access nonstatic fields or nonstatic methods.
+     
+     -> EXAM TIP A static method is used to manipulate static class variables or
+     to define utility methods. A utility method may or may not accept method
+     parameters.
+     
+     WHAT CAN A STATIC METHOD ACCESS?
+      Neither static class methods nor static class variables can access the nonstatic instance
+      variables and instance methods of a class. But the reverse is true: nonstatic variables
+      and methods can access static variables and methods because the static members of a
+      class exist even if no instances of the class exist.
+      
+        class MyClass {
+          static int x = count();
+          int count() { return 10; } //Compilation error: MyClass.java:3: nonstatic method count() cannot be referenced from a static context
+        }
+        
+        The Following code is valid
+        class MyClass {
+          static int x = result(); //Static variable referencing a static method
+          static int result() { return 20; }
+          int nonStaticResult() { return result(); }  //Nonstatic method using a static method
+        }
+
+    STATIC INITIALIZER BLOCKS
+     Because static variables can’t be initialized using the constructors of a class, a static initializer
+     block is used to initialize static variables. This initializer block executes when a
+     class is loaded by the JVM into memory.
+
+     static {
+       //code to initialize static variables
+     }
+
+     class AffiliateProgram {
+       private static int accountOpenBonus;
+       static {
+         accountOpenBonus = 5;
+       }
+     }
+
+     //You might argue that you could initialize the static variable accountOpenBonus as follows
+     class AffiliateProgram {
+       private static int accountOpenBonus = 5;
+     }
+     
+     //But what happens if you need to use a calculated value or initialize the value of that static variable based on the outcome of a condition
+     class AffiliateProgram {
+       private static int accountOpenBonus;
+       static {
+        if (/* file XYZ exists */)
+          accountOpenBonus = 5;
+        else
+          accountOpenBonus = 15;
+       }
+     }
+     
+     //Again, you might argue that you can move the preceding conditional execution to a static method and use it to initialize variable  //accountOpenBonus, without using the static initializer block:
+     class AffiliateProgram {
+       private static int accountOpenBonus = initAccountOpenBonus();
+       private static int initAccountOpenBonus() {
+         if (/* file XYZ exists */) //Conditional assignment of variable accountOpenBonus using static method
+           return 5;
+         else
+           return 15;
+       }
+     }
+     
+     //What happens if method initAccountOpenBonus() throws a checked exception, say, FileNotFoundException?
+     //As you know, if a method throws a checked exception, its use should either be enclosed within a try block or the method that uses it //should declare the exception to be thrown.
+     import java.io.*;
+     class AffiliateProgram {
+     private static int accountOpenBonus = initAccountOpenBonus();
+       private static int initAccountOpenBonus() throws FileNotFoundException
+       {
+         //relevant code
+       }
+     }
+     
+     //And here’s the way out:
+     class AffiliateProgram {
+       private static int accountOpenBonus;
+       private static int initAccountOpenBonus()
+         throws FileNotFoundException{
+         //..relevant code
+       }
+       static {
+         try {
+           accountOpenBonus = initAccountOpenBonus();
+         }
+         catch (FileNotFoundException e) {
+           //.. relevant code
+         }
+       }
+      }
+      
+      //Another reason for the existence of a static initializer block is to add values (static or dynamic) to collection objects that have //already been initialized. Here’s an example:
+      class AddValuesToStaticVariables {
+        static private String[] dataStores = new String[5];
+        static {
+          dataStores[0] = "us.ny";
+          dataStores[1] = "jp.tk";
+          dataStores[2] = "gr.br";
+          //..code that assigns dynamic value to dataStores[]
+        }
+      }
+      
+      -> see StaticInitBlocks.java
+      -> see DemoMultipleStaticBlocks.java (Twist in the Tale 2.1)
+      
+      *** Illegal forward reference error in java is a compile time error. 
+      You will encounter with this error when you try to use a field before it is defined.
+      We can’t use a field before it is defined but we can initialize a field before it is defined.
+      
+      class A
+      {
+        static
+        {
+          //++i;  can't use a field before it is defined
+          //System.out.println(i);  can't use a field before it is defined
+          i = 10;   //A field can be initialized before it is defined.
+          
+          //***In the assignment statement, you can use undefined field on LHS only but not on RHS.
+          //i=j; even you can't use it to initialize other fields
+          j=i; //but, can be initialized.
+        }
+        static int i;
+        static int j;
+      }
+      
+      The compiler rearranges the code to execute. It declares the static variable age and then picks up the code from all the 
+      static initializer blocks and assignment of age and combines them in a single static initializer block, in the order of 
+      their occurrence.
+      
+        -> see AssignManipulateStaticVariable.java
+        static int rate;
+        static
+        {
+          rate = 10;
+          rate = 0;
+          ++rate;
+        }
+      
+      -> EXAM TIP On the exam, beware of code that defines multiple initializer
+      blocks. If a class defines multiple initializer blocks, they execute in the
+      order of their appearance in a class.
+      
+    STATIC CLASSES AND INTERFACES
+     Static classes and interfaces. These are also referred to as nested classes, static nested classes, static interfaces, and static nested interfaces. You can’t prefix the definition of a top-level class or an interface with the keyword static.
+     
+   2.2.2 Final modifier
+    A final class can't be subclassed.
+    A final method can't be override it.
+    A final variable after it's initialized can't be reasigned.
+    
+*****FINAL VARIABLES
+     The final variables can be initialized only once. You can tag all types of variables— static variables, instance variables, local variables, and method parameters—with the nonaccess modifier final. Because of the differences in how these variable types are initialized, they exhibit different behavior.
+     
+     -> EXAM TIP If a static or instance variable marked as final, must be initialized, or the code won’t compile.
+       Interestingly, you can survive code with an uninitialized final local variable, if you don’t use it.
+
+     +<<Static Final Variables>>: A final static class variable can be initialized With:
+         -> Its declaration
+         -> Or by using a static initializer block
+         Which are guaranteed to execute only once for a class.
+
+       Because following options can be called multiple times: 
+         -x> static method 
+         -x> initializer block
+         -x> constructor
+         -x> instance method
+         it can’t define code to initialize a final (static) variable:
+      
+         //see FinalTest.java
+           class TestFinal {
+             static final int staticFinal;  //Static final variable not initialized
+             static final int staticFinal2 = 12345; //Static final variable initialized with its declaration
+             static {
+               staticFinal = 1234;  //Static initializer block to initialize static variable
+             }
+             static void setStaticFinal(int value) {
+               staticFinal = value;  //Won’t compile; static method can execute multiple times 
+                                     //and so it can’t include initialization of final variable.
+             }
+           }
+
+     +<<Instance Final Variables>>: A final instance variable can be initialized With:
+         -> Its declaration
+         -> Constructor
+         -> Initializer
+         Which are guaranteed to execute only once for instance object.
+
+       Because following options can be called multiple times: 
+         -x> static initializer
+         -x> static method
+         -x> instance method
+         
+         it can’t define code to initialize a final (static) variable:
+
+     +<<Local Final Variables>>:Local variables won't generate compilation error if a local final variable not initialized it's not used.
+         //finalLocalVariables NOT initialized
+           class MyClass {
+             void setValue(int a) {
+               final int finalLocalVar1;
+               finalLocalVar1 = 20;
+               final int finalLocalVar2;
+               /*System.out.println(finalLocalVar2); //Won’t compile when you try to use an uninitialized local variable*/
+             }
+           }
+
+
+     +<<Method Final Parameters>>: Method parameters are initialized when the method is invoked. If a method marks
+      its method parameter(s) as final, the method body can’t reassign a value to it.
+       //finalMethodParameters
+         class MyClass {
+           void setValue(final int finalMethodParam) {
+             finalMethodParam = 10; //Won’t compile; value can’t be assigned to final method parameter.
+           }
+         }
+     
+        There’s a difference between final primitive variables and final object reference variables. The final primitive variables can’t change, 
+        but the object referred to by final object reference variables can be changed. Only the final reference itself can’t be changed:
+          
+          class MyClass {
+            void addCondition(final StringBuilder query) {
+              query.append("WHERE id > 500"); //Can modify object referred to by final reference variable query.
+              query = new StringBuilder("SELECT name FROM emp"); //Won’t compile; can’t reassign variable query.another object to final reference variable query.
+            }
+          }
+
+    CONDITIONAL ASSIGNMENT OF FINAL VARIABLES
+     -> EXAM TIP On the exam, look out for multiple initializations of a final variable.
+     Code snippets that try to reinitialize a final variable won’t compile.
+     
+     -> EXAM TIP The private methods of a base class aren’t inherited by its derived classes. 
+     A method using the same signature in the derived class isn’t an overridding method, but a new method.
+     //Compiles correctly 
+       class MyClass {
+         final int finalVar;
+         MyClass(double a, double b) {
+           if (a>b)
+             finalVar = 20;
+           else
+             finalVar = 30;
+         }
+       }  
+
+*****FINAL METHODS
+      The final methods defined in a base class can’t be overridden by its derived classes.
+      The final methods are used to prevent a derived class from overriding the implementation
+      of a base class’s method.
+      
+      //see FinalMethod.java
+        class Base {
+          public final void finalMethod() {}
+          //(2)private final void fialMethod() {}
+        }
+        public class FinalMethod extends Base {
+          final void finalMethod() {}  //Won’t compile; final method in base class can’t be overridden.
+		            	               //(2)Compiles successfully
+        }
+    
+      -> EXAM TIP The private methods of a base class aren’t inherited by its
+         derived classes. A method using the same signature in the derived class
+         isn’t an overridding method, but a new method.
+
+
+*****FINAL CLASSES
+      You can prevent a class from being extended by marking it as a final class.
+      
+      -> EXAM TIP Look out for trick questions on the exam that extend final
+      classes from the Java API, like class String and the wrapper classes Byte,
+      Short, Integer, Long, Float, Double, Boolean, and Character. When you
+      don’t look at the source code of the base class and see that it’s marked
+      final, it’s easy to overlook that the classes that extend it won’t compile.
+      Though the authors of this exam claim not to include trick questions,
+      they also state that they expect the candidates to know “their stuff.”
+
+
+  2.3 Enumerated Types
+   2.3.1 Understanding the need for and creating an enum
+     An enum enables you to create a type, which has a fixed set of constants.
+     
+       enum Level { BEGINNER, INTERMEDIATE, EXPERT }
+        -> EXAM TIP The enum constant list must be the first in the enum definition and should be followed by a semicolon.
+        A semicolon is optional if you don’t add methods and variables to your enum.
+       
+   2.3.2 Adding implicit code to an enum
+     Let’s work with the enum Level created in the previous section (2.3.1) and decompile its Level.class file, 
+     using a decompiler (like JD): 
+     
+       enum Level { BEGINNER, INTERMEDIATE, EXPERT }
+
+     //Decompiled enum Level
+       final class Level extends Enum {
+         public static final Level BEGINNER;
+         public static final Level INTERMEDIATE;
+         public static final Level EXPERT;
+
+         private Level(String s, int i){
+           super(s, i);
+         }
+
+         static{
+           BEGINNER = new Level("BEGINNER", 0);
+           INTERMEDIATE = new Level("INTERMEDIATE", 1);
+           EXPERT = new Level("EXPERT", 2);
+         }
+
+         private static final Level $VALUES[];  
+
+         public static Level[] values(){
+           return (Level[])$VALUES[].clone();
+         }
+
+         public static Level valueOf(String s){
+           return (Level)Enum.valueOf(Level, s);
+         }
+
+      }
+      
+    2.3.3 Extending java.lang.Enum
+      All enums in Java extend the abstract class java.lang.Enum, defined in the Java API.
+      
+        //java.lang.Enum.java
+        public abstract class Enum<E extends Enum<E>> 
+          implements Comparable<E>, Serializable {
+
+          private final String name;
+          private final int ordinal;
+
+          protected Enum(String name, int ordinal){
+            this.name = name;
+            this.ordinal = ordinal;
+          }
+
+          public String toString() {
+            return name;
+          }
+
+          public final String name() {
+            return name;
+          }
+          //.. rest of the code
+        }
+      
+        ->  EXAM TIP Watch out for exam questions that use methods like Collections.sort() from the Collections API to sort enum constants.
+        The default order of enum constants is their order of definition. The enum constants aren’t sorted alphabetically.
+       
+        -> EXAM TIP For an enum constant BEGINNER in enum Level, calling System.out.println(Level.BEGINNER) returns the name of the 
+        enum constant—that is, BEGINNER. Because method name() is a final method can’t override it, but you can override toString() 
+        in an enum to modify this default return value      
+
+      class Person {}
+      enum Level extends Person { BEGINNER, INTERMEDIATE, EXPERT } //Won't compile
+      interface MyInterface {}
+      enum Level implements MyInterface { BEGINNER, INTERMEDIATE, EXPERT } //Will compile
+        -> EXAM TIP An enum implicitly extends java.lang.Enum, so it can’t extend
+        any other class. But a class can’t explicitly extend java.lang.Enum. 
+        But notice that you can implement multiple interfaces for an Enum
+      
+      class MyClass extends java.lang.Enum {}
+        -> EXAM TIP An enum implicitly extends java.lang.Enum, so it can’t extend
+        any other class. But a class can’t explicitly extend java.lang.Enum.
+        
+    2.3.4 Adding variables, constructors, and methods to your enum
+      You can add variables, constructors, and methods to an enum. You can also override
+      the nonfinal methods from the java.lang.Enum class. Following is an example:
+      
+        enum IceCream {
+          VANILLA, STRAWBERRY, WALNUT, CHOCOLATE;
+          private String color;
+          public String getColor() {
+            return color;
+          }
+          public void setColor(String val) {
+            color = val;
+          }
+          public String toString() {
+            return "MyColor:"+ color;
+          }
+        }
+       
+        public class UseIceCream {
+          public static void main(String... args){
+            IceCream.VANILLA.setColor("white");
+            System.out.println(IceCream.VANILLA.getColor());
+            System.out.println(IceCream.VANILLA.toString());
+          }
+        } 
+
+        -> EXAM TIP The enum constant list must be the first in the enum definition and shoul be followed by a semicolon. 
+        A semicolon is optional if syou don’t add methods and variables to your enum.
+
+     You can also define constructors in your enum and override methods that apply only to particular enum constants.
+     A constructor in an enum can be defined only with default or private access; public and protected access levels aren’t allowed.
+     Constant specific class body, defines overridding methods for a particular enum constant.
+       enum IceCream{
+         VANILLA("white");
+         STRAWBERRY("pink");
+         WALNUT("brown"){
+           public String toString() {
+             return "WALNUT is Brown in color";
+           }
+           public String flavor(){
+             return "great!";
+           }
+         }
+         CHOCOLATE("dark brown");
+         
+         private String color;
+         public String toString(){
+           return "MyColor: "+color;
+         }
+         public String getColor(){
+           return this.color;
+         }
+         public void setColor(String value){
+           this.color = value;
+         }
+         
+         IceCream(String color){
+           setColor(color);
+         }
+       }
+       
+        
+  2.4 Static nested and inner classes
+    [2.4] Create top-level and nested classes
+    A nested class is a class defined within another class. Nested classes that are declared as
+    static are referred to as static nested classes. Nested classes that aren’t declared as static
+    are referred to as inner classes. Like a regular top-level class, an inner or static nested
+    class can define variables and methods. You can also define inner classes within methods and without a name.
+    
+    2.4.1 Advantages of inner classes
+      Inner classes offer multiple advantages. To start, they help you objectify the functionality of a class, within it.
+    
+    2.4.2 Static nested class (Static Inner Class)
+      A static nested class is a static class that’s defined (nested) within another class. 
+      It’s referred to as a nested class and not an inner class because it isn’t associated with any instance of its outer class.
+      You’d usually create a static nested class to encapsulate partial functionality of your main class, whose instance can exist without the instance of its outer class.
+        
+    -> When static nested class is instantiated outside its outer  class, it must be prefixed with its outer class name    
+      //StaticNestedClass.java
+        class Outer {
+          static int outerStatic = 10;
+          int outerInstance = 20;
+
+          static class StaticNested {
+            static int innerStatic = 10;
+            int innerInstance = 20;
+          }
+
+          public static void main(String args[]) {
+            StaticNested nested1 = new StaticNested(); //When static nested class is instantiated within its outer class, 
+            Outer.StaticNested nested2 = new Outer.StaticNested(); //it doesn’t need to be prefixed with its outer class name (though it can).
+
+            nested1.innerStatic = 99;
+            nested1.innerInstance = 999;
+
+            System.out.println(nested1.innerStatic + ":" + nested1.innerInstance);
+            System.out.println(nested2.innerStatic + ":" + nested2.innerInstance);
+          }
+        }
+
+        class AnotherClass {
+          Outer.StaticNested nested1 = new Outer.StaticNested();
+          StaticNested nested2 = new StaticNested();  //When instantiated outside its outer class 
+                                                      //Static nested class must be prefixed with its outer class
+        }
+        
+      <<<Rules to remember about static nested classes>>>
+        ■ To create an object of a static nested class, you need to prefix its name with the name of its outer class
+          (necessary only if you’re outside the outer class).
+        ■ A static nested class can define both static and nonstatic members.
+        ■ You need not create an object of a static nested class to access its static members.
+          They can be accessed the way static members of a regular class are accessed.
+        ■ You should create an object of a static nested class to access its nonstatic members, by using the operator new.
+        ■ A static nested class can be defined using any access modifier.
+        ■ A static nested class can define constructor(s).
+
+
+    2.4.3 Inner class (Member Class)
+      The definition of an inner class is enclosed within another class, also referred to as an
+      outer class. An inner class is an instance member of its outer class. An instance of an inner
+      class shares a special bond with its outer class and can’t exist without its instance.
+
+      //InnerTreeSort.java
+        class Node {
+          Object value;
+          Node left, right;
+        }
+
+        class Tree {
+          Tree() {}
+          Node rootNode;
+          void addElement(Object value){
+            //... code
+          }
+          void removeElement(Object value){
+            //... code
+          } 
+          void sortTree(boolean ascending){
+            new TreeSort(ascending).sort();
+          }
+
+          class InnerTreeSort { 
+            boolean ascendingSortOrder = true;
+            TreeSort(boolean order){
+              assendingSortOrder = order;
+            }
+            void sort() {
+              //... code
+            } 
+          }
+        }
+      
+      + CHARACTERISTICS OF AN INNER CLASS
+        It can be defined using any access modifier, can define constructors, and can define instance variables and methods. 
+        An inner class can define static members variables but not static methods.
+        
+        -> EXAM TIP You must have an outer class instance to create an inner class instance. 
+        
+        -> EXAM TIP The accessibility of an inner class outside its outer class depends on the access modifier used to define the inner class. For example, an inner class with default access can’t be accessed by classes in different packages than the outer class.
+         
+          ... see InnerInstantiation.java
+        
+      + WHAT CAN AN INNER CLASS ACCESS?
+        An inner class can access all the members of its outer class, including its private members. Outer class members with the same name as inner class members can be accessed using Outer.this, where Outer is the name of the outer class
+        
+          class Outer {
+            private String privateOuter = "Outer";
+            private int sameName = 20;
+            class Inner{
+              String publicInner = privateOuter;
+              int sameName = Outer.this.sameName;
+            }
+          }
+    
+      + CAN AN INNER CLASS COEXIST WITH ONLY ITS OUTER CLASS?
+        Yes.
+        
+      <<<Rules to remember about inner classes>>>
+        ■ You can create an object of the inner class within an outer class or outside an outer class.
+        ■ When an inner class is created outside its outer class, its type name should include the name of its outer class, 
+          followed by a dot (.) and then the name of the inner class.
+        ■ To create an inner class with a static method of an outer class, or outside an outer class, call the operator new on the object of   
+          the outer class to instantiate the inner class.
+        ■ An inner class can’t define static methods. It can define final static variables but nonfinal static variables aren’t allowed.
+        ■ Members of the inner class can refer to all variables and methods of the outer class.
+        ■ An inner class can be defined with all access modifiers.
+        ■ An inner class can define constructors.
+        ■ An inner class can define variables and methods with any access level.
+
+    2.4.4 Anonymous Inner class
+      As the name implies, an anonymous inner class isn’t defined using an explicit name.
+        
+      -> see AnonymousLecture.java
+      * Anonymous classes come in handy when you wish to override methods for only a particular instance.
+      * You can create an anonymous class even if you don’t override any method.
+      * Similarly, you can pass an anonymous class instance to a method parameter.
+      * You can use an anonymous inner class to return a value from a method.
+      
+      ANONYMOUS INNER CLASS THAT IMPLEMENTS AN INTERFACE
+       -> EXAM TIP An anonymous inner class can extend at most one class or implement one interface. Unlike other classes, an anonymous class can neither implement multiple interfaces, nor extend a class and implement an interface together.
+       
+       //see AnonymousInterface.java
+         interface Flyable{
+           void fly();
+         }
+
+         class BirdSanctuary {
+           Flyable bird = new Flyable(){
+             public void fly() {
+               System.out.println("Flying high in the sky");
+             }
+           };
+         }
+
+
+    2.4.5 Method local inner classes
+      The method local inner classes are defined within static or instance methods of a class.
+      Though these classes can also be defined within code blocks, they are typically created
+      within methods.
+      
+        class Outer {
+          void outerMethod () {
+            class Inner { }
+          }
+          static void outerMethod2 () {
+            class Inner { }
+          }
+        }
+        For the preceding code, the Java compiler will generate three class files:
+        -> Outer.class, Outer$1Inner.class, and Outer$2Inner.class.
+        
+      CHARACTERISTICS OF METHOD LOCAL INNER CLASSES
+        Recall that none of the variables within a method can be defined using any explicit modifier (public, protected, private).
+
+        class Outer {
+          private int privateOuter = 10;
+          void outerMethod () {
+            class Inner {
+              protected Inner() {}
+              public int publicInner = 100;
+              //int privateInner = privateOuter;
+              int privateInner = Outer.this.privateOuter;
+            }
+          }
+        }
+        
+      CREATION OF A LOCAL INNER CLASS
+        A method local inner class can be created only within the method in which it’s defined.
+        Also, its object creation can’t appear before the declaration of the local inner class
+
+        class Outer {
+          void outerMethod () {
+            //Inner in1 = new Inner();
+            class Inner {}
+            Inner in2 = new Inner();
+            
+      WHAT CAN A METHOD LOCAL INNER CLASS ACCESS?
+        A method local inner class can access all variables and methods of its outer class,
+        including its private members and the ones that it inherits from its base classes.
+
+
+    2.4.6 Disadvantages of inner classes
+    -> Inner Class is an advanced concept, and it can be difficult for inexperienced programmers to identify, implement, and maintain them.
+    -> Because inner classes can access the private members of their outer class, they could break the designed encapsulation.
