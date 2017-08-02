@@ -1,0 +1,540 @@
+03.Object-oriented Design Principles
+  This chapter covers
+    ■ Interfaces—their declaration, implementation, and application
+    ■ Choosing between class inheritance and interface inheritance
+    ■ Relationships between Java objects
+    ■ Application of object composition principles
+    ■ Implementation of IS-A and HAS-A relationships between objects
+    ■ Singleton design pattern
+    ■ Data Access Object (DAO) design pattern
+    ■ Factory design pattern
+
+  3.1 Interfaces
+    [3.1] Write code that declares, implements, and/or extends interfaces
+    The term interface has two meanings: a type created using the keyword interface 
+    and a group of public methods of a class.
+
+      interface Moveable {
+        void move();
+      }
+
+      class Person{
+        public void eat(){}
+        public void work(){}
+      }
+ 
+    3.1.1 Understanding interfaces
+      We all, quite often, use interfaces in our lives. For example, when you refer to someone as a runner, do you care
+      whether that person is also an orator, a parent, or an entrepreneur? You care only that the person is able to run. 
+      In the preceding example, you can compare the term runner to a Java interface, which defines the required behavior run.
+      -> You can compare an interface with a window that can connect multiple objects but has limited access to them.
+
+    3.1.2 Declaring interfaces
+      For the exam, it’s important to understand the implicit modifiers that are added to the members of an interface.
+      All the methods of an interface are implicitly public and abstract. Its variables are implicitly public, static, and final.
+      
+                           -- becomes -->
+        interface Runner{                  [public] [strictfp] interface Runner [extends Athlete, Walker] {//Athlete|Walker r interfaces
+          int speed();                       public abstract int speed();
+          double distance = 70;              public static final double distance = 70;
+        }                                  }
+    
+      -> EXAM TIP The declaration of an interface can’t include a class name. An interface can never extend any class.
+      -> EXAM TIP All the top-level Java types (classes, enums, and interfaces)
+         can be declared using only two access levels:  public and default. 
+         Inner or nested types can be declared using any access level.
+         
+      VALID MODIFIERS FOR AN INTERFACE
+        +ACCESS Modifiers:
+          ■ public
+          ■ No modifier (default).
+        +NONACCESS Modifiers:
+          ■ abstract
+          ■ strictfp -> Guarantees that results of all floating-point calculations are identical on all platforms.
+          ** A nested interface can be defined using the nonaccess modifier static (any other nonaccess modifier isn’t allowed)
+      VALID ACCESS MODIFIERS FOR MEMBERS OF AN INTERFACE (variables, methods, inner interfaces, and inner classes)
+        -> public and No modifier (default).
+      SPECIAL CHARACTERISTICS OF METHODS AND VARIABLES OF AN INTERFACE
+        +Methods in interfaces are public and abstract by default:
+          int getMembers();
+          public abstract int getMembers();
+        +Variables defined in interfaces are public, static, and final by default.
+          int maxMembers = 100;
+          public static final int maxMembers = 100;
+
+          Interface variables are implicitly final, you can define only constants in an interface.
+          Ensure that you initialize these constants, or your code won’t compile:
+            interface MyInterface {
+              int number; //Won't compile
+            }
+
+    3.1.3 Implementing interfaces
+      -> EXAM TIP A concrete class must implement all the methods from the interfaces
+      that it implements. An abstract class can choose not to implement all
+      the methods from the interfaces that it implements.
+        //see -> InterfaceDefinition1.java
+        interface Livable {
+          void live();
+        }
+        interface GuestHouse {
+          void welcome();
+        }
+        class Home implements Livable, GuestHouse {
+          public void live() {}
+          public void welcome() {}
+        }
+
+      DEFINING AND ACCESSING VARIABLES WITH THE SAME NAME
+        //see -> InterfaceDefinition2.java
+        
+        -> EXAM TIP A class can define an instance or a static variable with the same
+        name as the variable defined in the interface that it implements. These
+        variables can be defined using any access level.
+        
+        -> EXAM TIP Because interface methods are implicitly public, the implementing
+        class must implement them as public methods, or else the class
+        will fail to compile.
+        
+        //
+          interface Livable {
+            void live();
+          }
+          class Home implements Livable {
+            void live() {}
+          }
+
+      IMPLEMENTING MULTIPLE INTERFACES THAT DEFINE METHODS WITH THE SAME NAME
+        //
+          interface Livable {
+            void live();  //***
+          }
+          interface GuestHouse {
+            void welcome();
+            void live();  //***
+          }
+          class Home implements Livable, GuestHouse {
+            public void live() {  //*** Compiles successfully
+              System.out.println("live");
+            }
+            public void welcome() {
+              System.out.println("welcome");
+            }
+          }
+      
+      OVERLAPPING METHOD IMPLEMENTATIONS WITH THEIR OVERLOAD VERSIONS
+        -> EXAM TIP A class can implement methods with the same name from multiple
+        interfaces. But these must qualify as correctly overloaded methods.
+
+        //... Correctly overloaded methods
+          interface Livable {
+            void live();
+          }
+          interface GuestHouse {
+            void live(int days);
+          }
+          class Home implements Livable, GuestHouse {
+            public void live() {
+              System.out.println("live");
+            }
+            public void live(int days) {
+              System.out.println("live for " + days);
+            }
+          }
+          
+        //...Invalid overloaded methods
+          interface Livable {
+            void live();
+          }
+          interface GuestHouse {
+            void live(int days);
+          }
+          class Home implements Livable, GuestHouse {
+            public void live() {
+              System.out.println("live");
+            }
+            public void live(int days) {
+              System.out.println("live for " + days);
+            }
+          }
+
+    3.1.4 Extending interfaces
+      An interface can inherit multiple interfaces. Because all the members of an interface are implicitly public, 
+      a derived interface inherits all the methods of its super interface(s). 
+      An interface uses the keyword extends to inherit an interface. 
+      By extending interfaces, you can combine methods of multiple interfaces.
+
+
+  3.2 Class inheritance versus interface inheritance
+    [3.2] Choose between interface inheritance and class inheritance
+    
+    3.2.1 Comparing class inheritance and interface inheritance
+      INSTANTIATION: 
+        -Class: A derived class instantiates its base class.
+        -Instance: Interfaces can’t be instantiated.
+      HOW MANY?
+        -Class: A class can extend only one base class.
+        -Instance: A class can implement multiple interfaces.
+      REUSING IMPLEMENTATION DETAILS
+        -Class: A class can reuse the implementation details of its base class
+        -Instance: An interface doesn’t include implementation details.
+      MODIFICATION TO BASE CLASS IMPLEMENTATION DETAILS
+        -Class: With the modified base class, a derived class might cease to offer the functionality it was originally created for; it may also fail to compile.
+        -Instance: Interfaces don’t include implementation details.
+
+    3.2.2 Preferring class inheritance over interface inheritance
+      REUSING THE IMPLEMENTATION FROM THE BASE CLASS
+        What do you think would happen if class java.lang.Object was defined as an interface? In this case,
+        you’d need to implement all these methods for every class that you created.
+      ADDING NEW BEHAVIOR IN ALL DERIVED CLASSES
+
+    3.2.3 Preferring interface inheritance over class inheritance
+      IMPLEMENTING MULTIPLE INTERFACES
+        Interface implementation has one major advantage: a class can implement multiple interfaces, to support multiple functionality.
+      DEFINING A NEW CONTRACT FOR EXISTING CLASSES TO ABIDE BY
+      FRAGILE DERIVED CLASSES
+        -> EXAM TIP Class inheritance isn’t always a good choice because derived
+        classes are fragile. If any changes are made to a base class, a derived class
+        might break. Extending classes that are from another package or are
+        poorly documented aren’t good candidates for base classes.
+        
+        //...
+          public abstract class Animal {
+            void move(){}
+            String live(){
+              return "live";
+            }
+          }
+          class Lion extends Animal {
+            void live(){}
+          }
+
+
+    3.3 IS-A and HAS-A relationships in code
+      [3.3] Apply cohesion, low-coupling, IS-A, and HAS-A principles
+        -> EXAM TIP Representing IS-A and HAS-A relationships by using (quick)
+        UML diagrams can help you on the exam. Though you may not see UML
+        diagrams on the exam, creating quick UML diagrams on an erasable
+        board (or something similar) provided to you during the exam will help
+        you answer these questions.
+        
+        ■ IS-A—This relationship is implemented when
+          – A class extends another class (derived class IS-A base class)
+          – An interface extends another interface (derived interface IS-A base interface)
+          – A class implements an interface (class IS-A implemented interface)
+        ■ HAS-A—This relationship is implemented by defining an instance variable. If a
+          class—say, MyClass—defines an instance variable of another class—say, Your-
+          Class—MyClass HAS-A YourClass. If MyClass defines an instance variable of an
+          interface—say, YourInterface—YourClass HAS-A YourInterface.
+
+        3.3.1 Identifying and implementing an IS-A relationship
+          A derived class IS-A type of its base class and its implemented interfaces.
+          A derived interface IS-A type of its base interface.
+          
+          IDENTIFYING AN IS-A RELATIONSHIP
+            interface Movable {}
+            interface Hunter extends Movable {}
+            class Animal implements Movable {}
+            class Herbivore extends Animal {}
+            class Carnivore extends Animal implements Hunter {}
+            class Cow extends Herbivore {}
+            class Goat extends Herbivore {}
+            class Lion extends Carnivore {}
+            class Tiger extends Carnivore {}
+            
+            Which of the following options do you think are correct?
+              ■ Cow IS-A Hunter.       -> false
+              ■ Tiger IS-A Herbivore.  -> false
+              ■ Cow IS-A Movable.      -> true
+              ■ Animal IS-A Herbivore. -> false
+              
+            -> EXAM TIP The key to finding the types that participate in an IS-A relationship
+            is to find your way, up the hierarchy tree, in the direction of the
+            arrows. This technique will not only help you with the exam, but also take
+            you a long way in your professional career.
+            
+          IMPLEMENTING AN IS-A RELATIONSHIP
+            You can implement an IS-A relationship by extending classes or interfaces, or by
+            implementing interfaces. Here is a quick set of rules for implementing inheritance
+            between classes and interfaces in code:
+              ■ A class inherits another class by using the keyword extends.
+              ■ A class implements an interface by using the keyword implements.
+              ■ An interface inherits another interface by using the keyword extends.
+
+        3.3.2 Identifying and implementing a HAS-A relationship
+          -> EXAM TIP Classes and interfaces can share a HAS-A relationship with
+          each other. If a class or interface—say, Type1—defines an instance variable
+          of a class or interface—say, Type2, Type1 HAS-A Type2 is correct. The
+          reverse isn’t correct. Also, the HAS-A relationship is shared by classes,
+          and so the relationship isn’t affected, whether the instance variable is
+          initialized or not.
+
+
+    3.4 Cohesion and low coupling
+      [3.3] Apply cohesion, low-coupling, IS-A, and HAS-A principles
+      Focused teams and team members are known to deliver better results. On the other
+      hand, highly dependent departments, teams, or team members might perform poorly.
+      The same principles can be applied to application design. -> (easy to work with, reusable, and maintainable)
+      
+      3.4.1 Cohesion -> Focused
+        Cohesion refers to how focused a class or a module is. High cohesion refers to a wellfocused
+        class or module, whereas low cohesion refers to a class or module that doesn’t
+        have a well-defined responsibility.
+        
+        //LowCohesion:Editor is performing diverse set of unrelated tasks
+        class Editor{
+          public void editBooks() {}
+          public void manageBookPrinting() {}
+          public void reachOutToNewAuthors() {}
+        }
+        
+        Working with multiple responsibilities can prevent the editor from specializing in all these processes.
+        Let’s limit the tasks to the book-editing process:
+        class Editor{
+          public void useEditTools() {}
+          public void editFirstDraft() {}
+          public void clearEditingDoubts() {}
+        }
+        
+        -> EXAM TIP Well-designed applications aim for highly cohesive classes and modules.
+      
+      3.4.2 Coupling
+        Coupling refers to how much a class or module knows about other classes or modules.
+        **NOTE The terms low coupling and loose coupling refer to the same concept. They are often used interchangeably.
+        
+        If a class interacts with another class —by using its interface (public methods), 
+        then classes are loosely coupled. But if that class can access and manipulate the other
+        by using its nonpublic members, these classes are tightly coupled.
+        
+        -> EXAM TIP Well-designed applications aim for loosely coupled classes and modules.
+
+
+    3.5 Object composition principles
+      [3.4] Apply object composition principles (including HAS-A relationships)
+      
+      How can you use the existing functionality of a class?
+      Inexperienced programmers or newcomers to the Java programming language and OOP often answer this question by
+      saying, “inheritance.” is correct in a way, because inheritance is an important concept. But this might leave a lot of
+      newcomers with the wrong impression that inheriting a class is the best way to use another class. 
+      Most of the time, you can use another class by composing your own class with an object of another class.
+      
+      -> EXAM TIP Object composition enables you to use the existing functionality
+      of classes without extending them. The approach is simple: create and
+      use objects of other classes in your own class.
+
+
+    3.6 INTRODUCTION TO DESIGN PATTERNS
+      People who live in regions that experience snowfall build sloping roofs so that snow and ice don’t accumulate on the rooftops. 
+      This “pattern” of designing sloping roofs was identified after multiple persons faced similar difficulties and found similar solutions. Now this is an established practice. Being ignorant about the design pattern of building a sloping roof can cause 
+      you a lot of rework later. In the computing domain, multiple design patterns have been documented by observing recurring programming, behavioral, or implementation issues.
+      
+      3.6.1 What is a design pattern?
+        A design pattern identifies a specific problem and suggests a solution to it. It’s neither
+        ready-made code that you can drop in your projects nor a framework to use.
+        
+        ***NOTE No formal format of documentation of a design pattern exists. You can document it the way you like.
+
+      3.6.2 Why do you need a design pattern?
+        Design patterns offer experience reuse and not code reuse. Design patterns help you reuse
+        the experience of application designers and developers in terms of the guidelines that
+        you can follow to implement commonly occurring programming scenarios.        
+
+
+    3.7 SINGLETON PATTERN
+      Singleton is a creational design pattern that ensures that a class is instantiated only
+      once. The class also provides a global point of access to it.
+      
+      3.7.1 Why do you need this pattern?
+        Imagine the issues that can be caused by: 
+          multiple browser caches.
+          multiple thread pools.
+          multiple Device Manager.
+          multiple print spooler.
+        In these scenarios, you might need only one object of a class to encapsulate all
+        operations for managing a pool of resources, and to also serve as a global point of reference.
+        
+      3.7.2 Implementing the Singleton pattern
+        1.Define a private constructor for the class that implements the Singleton pattern.
+        2.Define a private static variable to refer to the only instance of the Singleton class.
+        3.Define a public static method to access the only instance of the Singleton class.
+        
+      3.7.3 Ensuring creation of only one object in the Singleton pattern
+        
+        UNDERSTANDING THE PROBLEM OF CONCURRENT ACCESS
+          Imagine that two objects request class Singleton to return its instance at exactly the
+          same time, by calling method getInstance():
+            -> each method call will create a new object and assign it to the variable anInstance.
+        
+        FIXING CONCURRENT CREATION: EAGER INITIALIZATION
+          eager initialization will enable you to initialize the static variable as soon as the class is loaded:
+          
+          class Singleton{
+            private static Singleton anInstance = new Singleton();  //eager initialization
+            public static getSingleton(){
+              return anInstance;
+            }
+            private Singleton(){
+              System.out.println("Private constructor...");
+            }
+          }
+      
+        FIXING CONCURRENT CREATION: SYNCHRONIZED LAZY INITIALIZATION
+          synchronized means that multiple threads or objects can’t execute this method concurrently:
+
+          //synchronizedMethod
+            class Singleton {
+              private static Singleton anInstance;
+              synchronized public static getSingleton() {
+                if(anInstance == null) {
+                  anInstance = new Singleton();
+                }
+                return anInstance;
+              }
+              private Singleton() {
+                System.out.println("Private constructor...");
+              }
+            }
+          
+          //synchronizedPartial
+            class Singleton {
+              private static Singleton anInstance;
+              public static Singleton getSingleton(){
+                if(anInstance == null) {
+                  synchronized(Singleton.class){
+                    if(anInstance == null){
+                      anInstance = new Singleton();
+                    }
+                  }
+                }
+                return anInstance;
+              }
+              private Singleton(){
+                System.out.println("Private constructor...");
+              }
+            }
+            
+            -> EXAM TIP On the exam, all of these approaches (eager initialization, synchronization
+            of the complete method getInstance(), and partial synchronization
+            of method getInstance()) may be presented, and you may be
+            questioned about the right approach for implementing the Singleton pattern.
+            All these approaches are good. Beware of modified code that tries to
+            synchronize a partial getInstance() method, which doesn’t synchronize
+            the code that creates an object of Singleton
+
+
+        USING ENUMS
+          By using enums, you can implement the Singleton pattern in a thread-safe manner.
+          //SingletonEnum
+            public enum Singleton {
+              INSTANCE;
+              public void initCache(){
+                //..code
+              }
+            }
+            
+            NOTE: Because enum instances can’t be created by any other class, the enum Singleton will
+            ensure the existence of only one of its instances, Singleton.INSTANCE.
+
+      3.7.4 Comparing Singleton with global data
+
+
+    3.8 Factory pattern
+      [3.7] Design and create objects using a factory pattern
+      
+      In this section, you’ll work with how to use the Factory pattern to prevent tight coupling
+      between classes. This pattern also eliminates direct constructor calls in favor of
+      invoking a method.
+       ■ Simple Factory or Static Factory pattern
+       ■ Factory Method pattern
+       ■ Abstract Factory pattern
+       
+      3.8.1 Simple Factory pattern (or Static Factory pattern)
+        This pattern creates and returns objects of classes that extend a common parent class
+        or implement a common interface. The objects are created without exposing the
+        instantiation logic to the client. The calling class is decoupled from knowing the exact
+        name of the instantiated class.
+         
+          -> see FactoryPatternSimple.java
+           
+          Method getAppInstance() is manageable with just a few comparisons (if-else) statements.
+          What happens if method getAppInstance() is supposed to return App instances
+          for a wide variety of file extensions?   
+        
+      3.8.2 Factory Method Pattern
+        The intent of the Factory Method pattern is to define an interface for creating an
+        object but let subclasses decide which class to instantiate. The Factory Method pattern
+        lets a class defer instantiation to its subclasses.
+        
+          -> see FactoryPatternMethod.java
+          
+          Now, what happens if you were required to create families of related classes, such as
+          applications that can open rich format files for editing in Windows and Mac systems?
+          Because these systems might use separate applications for similar purposes,
+
+      3.8.3 Abstract Factory pattern
+        The Abstract Factory pattern is used to create a family of related products (in contrast,
+        the Factory Method pattern creates one type of object). This pattern also defines an
+        interface for creating objects, but it lets subclasses decide which class to instantiate.
+        
+          -> see FactoryPatternAbstract.java
+        
+      3.8.4 Benefits of the Factory pattern
+        Here are the benefits that apply to all Factory patterns:
+          ■ Prefer method invocation over direct constructor calls
+          ■ Prevent tight coupling between a class implementation and your application
+          ■ Promote creation of cohesive classes
+          ■ Promote programming to an interface
+          ■ Promote flexibility. Object instantiation logic can be changed without affecting the clients that use objects. They also allow addition of new concrete classes.
+
+        Here’s a list of what doesn’t apply or isn’t related to the Factory pattern:
+          ■ It doesn’t eliminate the need of overloading constructors in class implementations.
+          ■ It doesn’t encourage the use of any particular access modifier. It isn’t compulsory to define private members to use this pattern.
+          ■ It won’t slow your application.
+          ■ It isn’t related to how to monitor objects for change.
+          
+    -> The exam will question you on the classes from the Java API that use this pattern.
+      3.8.5 Using the Factory pattern from the Java API
+        ■ java.util.Calendar
+        ■ java.util.Arrays
+        ■ java.util.ResourceBundle
+        ■ java.sql.DriverManager
+        ■ java.sql.DriverManager
+        ■ java.sql.Connection
+        ■ java.sql.Statement
+        ■ java.text.NumberFormat
+        ■ java.text.NumberFormat
+        ■ java.text.NumberFormat
+        ■ java.util.concurrent.Executors
+
+
+    3.9 DAO pattern
+      Almost all applications need to store data to a persistent medium in one form or another. 
+      Data persistence can range from using simple text files to full-fledged database management systems.
+      
+      3.9.1 What is the DAO pattern
+        The DAO pattern abstracts and encapsulates all access to a data store (flat files, relational
+        databases, XML, JSON, or any other data source). It manages the connection
+        with the data source to access and store the data.
+        
+          -> EXAM TIP The DAO pattern decouples classes that define business or presentation logic from the data persistence details.
+          
+      3.9.2 Implementing the DAO pattern
+        Identify the data that you need to store to or retrieve from a data store (say, Emp).
+        Define an interface, a DAO, say, EmpDAO, to expose the data’s CRUD operations. The 
+        implementation details are hidden from clients and defined in a class (say, EmpDAOImpl).
+        If the implementation details to access data in the data source change, it
+        doesn’t affect a client. This pattern allows an application to adapt to different data
+        stores or its version without affecting a client.
+        
+          -> see DAOPattern.java
+            
+          -> EXAM TIP The CRUD operations form the basis of the DAO pattern.
+          -> EXAM TIP The exam might ask you whether it’s common to use the Factory pattern with the DAO pattern. 
+             The answer is yes (as shown in the next section). But it isn’t mandatory.
+             
+      3.9.3 Using the Simple Factory pattern with the DAO pattern         
+        You can use a Factory pattern to work with multiple DAO pattern implementations. The following example uses the Simple Factory pattern. 
+        Method getInstance() in class DAOFactory returns an instance of the EmpDAO implementation, which can be used by a client class (Client).
+        
+         -> see DAOFactorySimple.java
+         
+      3.9.4 Using the Factory Method or Abstract Factory pattern with the DAO pattern
