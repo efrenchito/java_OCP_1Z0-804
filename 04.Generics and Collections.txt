@@ -1,0 +1,470 @@
+04.Generics and Collections
+  [4.1] Create a generic class
+  [4.2] Use the diamond for type inference
+  [4.3] Analyze the interoperability of collections that use raw types and generic types
+  [4.4] Use wrapper classes, autoboxing, and unboxing
+  [4.5] Create and use List, Set, and Deque implementations
+
+  This chapter covers
+    ■ Creating and using generic types
+    ■ Using the diamond for type inference
+    ■ Analyzing the interoperability of collections that use raw types and generic types
+    ■ Using wrapper classes, autoboxing, and unboxing
+    ■ Creating and using List, Set, and Deque implementations
+    ■ Creating and using Map implementations
+    ■ Working with the java.util.Comparator and java.lang.Comparable interfaces
+    ■ Sorting and searching arrays and lists
+
+
+  4.1 Introducing generics: WARM-UP
+    Generics enable you to abstract over types. They add type safety to collection classes.
+    Introduced with Java version 5.0, generics enable developers to detect certain bugs
+    during compilation so they can’t creep into the runtime code
+    
+    4.1.1 Need for introducing generics
+      With the introduction of generics, programmers could indicate their intent of using a
+      particular type of data with a class, interface, or method (not enums, because enums
+      can’t have generic type parameters).
+        //javac GenericsBejore.java -Xlint:unchecked
+          list ls = new ArrayList(2);
+          ls.add("Paul");
+          ls.add(new Integer(1));
+          for(int i=0;i<ls.size();++i){ 
+            String str = (String)ls.get(i);
+            System.out.pritnln(str.length());
+          }
+          
+      -> EXAM TIP The basic purpose behind using generics is to enable you to
+      mark your intent of using a class, method, or interface with a particular
+      data type. Generics add compile-time safety to collections.
+      
+    4.1.2 Benefits and complexities of using generics
+      Apart from compile-time safety, you also get the following benefits with generics:
+      ■ Removing explicit casts
+      ■ Better code readability
+      ■ Developing generic algorithms
+
+
+  4.2 Creating generic entities
+    [4.1] Create a generic class
+    On the exam, you’ll be tested on how to create generic classes, interfaces, and methods—within generic and nongeneric classes or interfaces.
+    
+    4.2.1 Creating a generic class
+      A NONGENERIC CLASS
+        -> see GenericImplementation.java (ParcelNonGeneric)
+    
+      ADDING TYPE SAFETY TO A NONGENERIC CLASS
+        -> see GenericImplementation.java (ParcelGeneric1)
+      
+      VARIABLE NAMES USED FOR TYPE PARAMETERS
+        -> see GenericImplementation.java (ParcelGeneric2)
+        You must follow the variable naming rules for type parameters;
+          As per Oracle’s naming conventions, you should use uppercase single characters for type parameters
+        for instance: 
+          You can’t use Java keywords.
+       
+       GENERIC CLASS EXTENDING ANOTHER GENERIC CLASS
+         A generic class can be extended by another generic class.
+           class Parcel<T> {}
+           class GenericBookParcel1<T> extends Parcel<T> {} //Compile succesfully
+           class GenericBookParcel2<X> extends Parcel<T> {} //Compile succesfully
+         
+       NONGENERIC CLASS EXTENDING A GENERIC CLASS
+         class Parcel<T>{}
+         class NonGenericPhoneParcel extends Parcel<Phone> {}
+         NonGenericPhoneParcel<String> var = new NonGenericPhoneParcel<>();  //Won't compile
+       
+       MULTIPLE TYPE PARAMETERS
+         class ClassName <T1, T2, …, Tn> { /* code */}
+
+       
+      -> EXAM TIP The first occurrence of T is different from its remaining occurrences because only the first one is surrounded by <>.
+      -> EXAM TIP A type parameter can be used in the declaration of classes, variables, method parameters, and method return types.
+      -> EXAM TIP A type argument must be passed to the type parameter of a base class. You can do so while extending the base class or while instantiating the derived class.
+      -> EXAM TIP You can’t pass type arguments to a nongeneric class.
+      
+    4.2.2 Working with generic interfaces
+      A generic interface enables you to abstract over types.
+      
+        interface MyMap<K, V> {
+          void set(K key, V value);
+          V get(K key);
+        }
+      
+      NONGENERIC CLASS IMPLEMENTING A GENERIC INTERFACE
+        When a nongeneric class implements a generic interface, the type parameters don’t follow the class name.
+          
+          class MapLegendNonGeneric implements MyMap<String, Integer> {
+            public void put(String s, Integer i) {}
+            public Integer get(String s) { return null; }
+          }
+          
+          class MapLegendNonGenericError implements MyMap<String, Integer> {
+            public void put(String s, Integer i) {}
+            public String get(String s) { return null; }  //Won't Compile
+          }
+        
+        -> EXAM TIP A nongeneric class can implement a generic interface by replacing its type parameters with actual types.
+
+      GENERIC CLASS IMPLEMENTING A GENERIC INTERFACE
+        -> see GenericInterface.java
+        
+        It’s important to use a correct combination of type parameters and actual parameters in the method declarations.
+        //WontCompile
+          class MapLegendGeneric4<K> implements MyMap<K, String> {
+            public void put(Object value, K key) {}
+            public String get(K key) { return null; }
+          }
+        
+        -> EXAM TIP Generic classes and interfaces are collectively referred to as generic types.
+        
+    4.2.3 Using generic methods
+      A generic method defines its own formal type parameters. 
+      You can define a generic method in a generic or a nongeneric class.
+      
+      GENERIC METHODS DEFINED IN A NONGENERIC CLASS OR INTERFACE
+        //GenericMethodTest.java
+          public <E> void printArray(E[] array){
+            for(E item: array){
+              System.out.println("Delivering: "+ item);
+            }
+          }
+
+      GENERIC METHODS DEFINED IN A GENERIC CLASS OR INTERFACE
+        //GMinGI
+          interface Map<X, Y>{
+            <T> void mapMaterial(T t);
+          }
+
+        //GMinGC
+          class Phone<X> {
+            <T> Phone(T t) {
+              //..code
+            }
+          }
+          
+        -> Phone<Double> c = new Phone<Double>("Android");
+
+    4.2.4 Bounded type parameters
+      You can limit the type of objects that can be passed as arguments to generic classes, interfaces, 
+      and methods by using bounded type parameters.
+      
+      NEED FOR BOUNDED TYPE PARAMETER
+        //NeedForBounded.java
+          abstract class Gift{
+            abstract double getWeight();
+          }
+          class Book extends Gift{
+            public double getWeight() {return 3.2;}
+          }
+          class Phone extends Gift{
+            public double getWeight() { return 1.1; }
+          }
+          class Parcel<T>{
+            private T t;
+            public void set(T t) {
+              this.t = t;
+            }
+            public void shipParcel() {
+              if (t.getWeight() > 10)  //Won't compile
+                System.out.println("Ship by courier ABC");
+              else
+                System.out.println("Ship by courier XYZ");
+            }
+          }
+
+      DEFINING BOUNDED TYPE PARAMETERS
+        //DefiningBounded.java
+          class Parcel<T extends Gift>{
+            private T t;
+            public void set(T t) {
+              this.t = t;
+            }
+            public void shipParcel() {
+              if (t.getWeight() > 10)  //Compiles; type of T is Gift
+                System.out.println("Ship by courier ABC");
+              else
+                System.out.println("Ship by courier XYZ");
+            }
+          }
+        
+        The keyword implements isn’t used to specify the bound as an interface. The following code won’t compile:
+          class Parcel<T implements Serializable>{} //Won't compile
+          
+        -> EXAM TIP For a bounded type parameter, the bound can be a class,
+           interface, or enum, but not an array or a primitive type. All cases use the
+           keyword extends to specify the bound. If the bound is an interface, the
+           implements keyword isn’t used.
+         
+      DEFINING MULTIPLE BOUNDS
+        A type parameter can have multiple bounds.
+        //MultipleBounds.java
+          interface Wrappable{}
+          interface Exchangeable{}
+          class Gift{}
+          class Parcel <T extends Gift, Exchangeable, Wrappable>{}
+          
+          -> If you try to pass a type argument that doesn’t subtype all the bounds, your code won’t compile.
+          
+        EXAM TIP For a type parameter with multiple bounds, the type argument must be a subtype of all bounds.
+
+
+    4.2.5 Using wildcards
+      NEED TO USE AN UNKNOWN TYPE
+        Before you understand how to use the wildcard, you must know where and why you need it.
+        
+          class Gift{}
+          class Book extends Gift{}
+          class Phone extends Gift{}
+          
+          Gift gift = new Book();
+          gift = new Phone();
+          
+          List lst1 = new ArrayList(2);
+          List<T> lst2 = new ArrayList<T>();
+          ArrayList<Gift> lst3 = new ArrayList<Book>(); //Won't compile
+          List<Gift> lst4 = new ArrayList<Book>(); //Won't compile
+          List<> lst5 = new ArrayList<Book>(); //Won't compile
+          
+          You can use a wildcard to get around this.
+          List<?> wishList = new ArrayList<Book>();
+          
+        -> EXAM TIP You can assign an instance of a subclass, say, String, to a variable
+        of its base class, Object. But you can’t assign ArrayList<String> to a variable 
+        of type List<Object>. Inheritance doesn’t apply to the type parameters.      
+          
+          
+      ADDING OBJECTS TO COLLECTIONS DEFINED USING A WILDCARD
+        On the exam, take note of code that tries to add objects to collections that are defined by using the wildcard, the code won’t compile:
+        
+          List<?> wishList = new ArrayList<Book>();
+          wishList.add(new Book());//Won't compile
+          
+        -> EXAM TIP When you use a wildcard to declare your variables or method
+           parameters, you lose the functionality of adding objects to a collection.
+           In this case, using the add method will result in compilation failure.
+      
+      ITERATING COLLECTIONS WITH A WILDCARD
+        -> see GenericWildCard.java
+
+
+    4.2.6 Using bounded wildcards
+      To restrict the types that can be used as arguments in a parameterized type, you can use bounded wildcards.
+        -> see GenericBoundedWildcard.java
+      
+      UPPER-BOUNDED WILDCARDS
+        You can restrict use of arguments to a type and its subtypes by using <? extends Type>,
+        where Type refers to a class, interface, or enum
+        
+          class Gift{}
+          class Book extends Gift{}
+          class Phone extends Gift{}
+          
+          List<? extends Gift> myList1 = new ArrayList<Gift>();
+          List<? extends Gift> myList2 = new ArrayList<Book>();
+          List<? extends Gift> myList3 = new ArrayList<Phone>();
+          
+          -> Upper-Bounded wildcard in method parameters:
+          public static void wrapGift(List<? extends Gift> list) {
+            for (Gift item : list) {
+              System.out.println("GiftWrap - " + item);
+            }
+          }
+          
+          List<Book> bookList = new ArrayList<Book>();
+          bookList.add(new Book("Oracle"));
+          bookList.add(new Book("Java"));
+          wrapGift(bookList);
+          
+          List<String> stringList = new ArrayList<String>();
+          stringList.add("Paul");
+          stringList.add("Shreya");
+          wrapGift(stringList); //Won't compile
+          
+          -> EXAM TIP You can use final classes in upper-bounded wildcards. Although
+             class X extends String won’t compile, <? extends String> will compile
+             successfully
+             
+             class MyClass extends String {} //Won't compile
+             public static void wrapGift(List<? extends String> list) {//In Upper-Bounded it's allowed
+               for (String item : list) {
+                 System.out.println("GiftWrap - " + item);
+               }
+             }
+             
+      LOWER-BOUNDED WILDCARDS
+        You can restrict use of type arguments to a type and its base or supertypes by using
+        <? super Type>, where Type refers to a class, interface, or enum
+        
+          class Gift{}
+          class Book extends Gift{} 
+          class Phone extends Gift{}
+          
+          List<? super Gift> myList1 = new ArrayList<Gift>();
+          List<? super Gift> myList2 = new ArrayList<Object>();
+          List<? super Gift> myList3 = new ArrayList<Phone>(); //Won't compile Gift doesn't extend Phone
+          List<? super Phone> myList4 = new ArrayList<Gift>();
+          
+          
+    4.2.7 Type erasure
+      Type information is erased during the compilation process; this is called type erasure.
+
+      -> EXAM TIP When a generic class is compiled, you don’t get multiple versions
+         of the compiled class files. A generic class gets compiled into a single
+         class file, erasing the type information during the compilation process.
+         
+      ** NOTE Though the exam might not include explicit questions on the
+         contents of a class file after type erasure, it will help you to understand
+         generics better and answer all questions on generics.     
+         
+      ERASURE OF GENERIC TYPE IN CLASSES, INTERFACES, AND METHODS
+        For a generic class Parcel, which uses an unbounded type parameter, say, T
+        //BeforeClassCompilation           //AfterClassCompilation
+          class Parcel<T>{                   class Parcel {
+            private T t;                       private Object t:
+            public void set(T t) {               public void set(Object t) {
+              this.t = t;                          this.t = t;
+            }                                    }
+            public T get() {                     public Object get() {
+              return t;                            return t;
+            }                                    }
+          }                                   }
+       
+        //BeforeIfaceCompilation                  //AterIfaceCompilation
+          interface MyMap<K extends String, V>{      interface MyMap {
+            void put(K key, V value);                  void put(String key, Object value);
+            V get(K key);                              Object get(String key);
+          }                                          }
+        
+        //BeforeBoundedCompilation                            //AfterBoundedCompilation
+          abstract class Courier {                              abstract class Courier {
+            public <E> void deliver(E[] array) {                  public void deliver(Object[] array) {
+              for (E item : array) {                                for(Object item: array) {
+                System.out.println("Delivering - " + item);           System.out.println("Delivering - " + item);
+              }                                                     }
+            }                                                     }
+          }                                                     }
+
+      BRIDGE METHODS
+        The Java compiler might need to create additional methods, referred to as bridge
+        methods, as part of the type erasure process.
+        //BeforeBridgeMethodComp                         //AfterBridgeMethodComp
+          class Book {}                                    class Book {}
+          class Parcel<T>{                                 class Parcel {
+            private T t;                                     private Object t;
+            public void set(T t) {                           public void set(Object t) {
+              this.t = t;                                      this.t = t;
+            }                                                }
+          }                                                }
+          class BookParcel extends Parcel<Book> {          class BookParcel extends Parcel {
+            public void set(Book book) {                     public void set(Book book) {
+              super.set(book);                                 super.set(book);
+            }                                                }
+          }                                                  public void set(Object obj) { //Throws ClassCastException
+                                                               set((Book)obj);             //for objects others than Book
+                                                             }
+                                                           }
+
+    4.2.8 Refreshing the commonly used terms
+      - Generic Type: A generic type is a generic class or a generic interface, having one or more type parameters in its declaration.
+      - Parameterized types: An invocation of a generic type is generally known as a parameterized type.
+                      For generic type List<E>, List<String> is a parameterized type
+      - Type parameter: You use type parameters to define generic classes, interfaces, or methods. E in List<E> is a type parameter.
+      - Type argument: A type argument specifies the type of objects to be used for a type parameter.
+                      For List<String>, String is a type argument.
+      - Wildcard:     A wildcard is represented by a ? (a question mark). It refers to an unknown type.
+      - Bounded wildcard: A wildcard is bounded when it is a base or supertype of a type.
+      - Raw type:     The name of a generic class, or a generic class without any type arguments, is
+                      a raw type. For List<E>, List is a raw type.
+
+
+  4.3 Using type inference
+    [4.2] Use the diamond for type inference
+    With generics, you usually use angle brackets (<>, also referred to as the diamond) to specify the type of arguments to instantiate 
+    a generic class or invoke a generic method. What happens if you don’t specify the type arguments? The Java compiler might be able to
+    infer the argument type by examining the declaration of the generic entity and its invocation.
+    
+    4.3.1 Using type inference to instantiate a generic class
+      When generics were introduced with Java 5, it was mandatory to include the type arguments to instantiate a generic class.
+      
+        class Parcel<T>{
+          //..code
+        }
+        Parcel<String> parcel = new Parcel<String>(); //Type arguments included to invoke constructor of generic class Parcel
+        Parcel<String> parcel = new Parcel<>(); //With Java7 empty set of type arguments can invoke constructor of g.c
+        Parcel<String> parcel = new Parcel(); //Won't compile attempt to assign raw type to generic type
+        Parcel<> parcel = new Parcel<String>(); //Won't compile
+
+    4.3.2 Using type inference to invoke generic methods
+      A Java compiler can’t infer the type parameters by using the diamond in the case of generic methods.
+      //
+        class Parcel<T> {
+          public <X> void deliver(X x) {               //Type parameter X to generic method deliver()
+            System.out.println(x.getClass());          //Outputs type of argument passed to deliver()
+          }
+          public static void main(String args[]) {
+            Parcel<String> parcel = new Parcel<>();
+            parcel.<Integer>deliver(new Integer(10));  //TypeOfParameter X is Integer;determined using Integer object passed to deliver()
+            //parcel.<>deliver(new Integer(10));       //Won’t compile; can’t use <> with generic method
+            parcel.deliver("Hello");                   //TypeOfParameter X is String; inferred using actual argument passed to deliver()
+          }
+        }
+
+
+  4.4 Understanding interoperability of collections using raw types and generic types
+    [4.3] Analyze the interoperability of collections that use raw types and generic types
+    
+    When generics were introduced with Java 5, there was a lot of existing Java code, which didn’t use generics. 
+    Because a new enhancement can’t render existing code useless, the existing code that didn’t use generics 
+    needed to be valid and interoperable, to be made to work with generics.
+    
+      ->EXAM TIP Raw types exist only for generic types. Watch out for exam questions
+        that might mention raw types for nongeneric classes and interfaces.
+        (for the generic class Parcel<T>, its raw type is Parcel)
+        
+    
+      4.4.1 Mixing reference variables and objects of raw and generic types
+        You can assign a parameterized type to its raw type. But the reverse will give a compiler warning.
+        
+          class Parcel<T> {
+            private T t;
+            public void set(T t) {
+              this.t = t;
+            }
+            public T get() {
+              return t;
+            }
+          }
+          Parcel parcel1 = new Parcel<Phone>();
+          parcel1.set("harry");  //Won't compile, because you lose type information when you use variable of raw type, 
+                                 //you can pass String object to set(), instead of Phone object
+                                 //raw type Parcel doesn’t have access to generic type information.
+          
+          Parcel parcel2 = new Parcel<Phone>();
+          parcel2.set(new Phone());  //Compiles with warning
+          Phone phone = parcel2.get(); //Won’t compile; with reference variable of raw type
+          
+          -> EXAM TIP When you mix raw with generic types, you might get a compiler warning or error, or a runtime exception.
+
+
+      4.4.2 Subtyping with generics
+        Because the class ArrayList implements the List interface, you can assign an object
+        of ArrayList to a reference variable of List. Similarly, because class String extends
+        class Object, you can assign an object of String to a reference variable of Object.
+        With generics, you must follow certain subtyping rules.
+        
+          List list = new ArrayList();
+          Object obj = new String();
+          List list = new ArrayList<String>();
+          List<Object> list = new ArrayList<String>(); //Won't compile
+      
+        Apart from generics, this exam will also test you on the collections framework. It’ll
+        include many implementations of the interfaces List, Set, Deque, and Map, together with 
+        classes Comparator and Comparable.
+
+
+    4.5 Introducing the collections framework: WARM-UP
+      A collection is an object that can group other objects. Each object in a collection is referred to as an element.
+      The Java collections framework is architecture for representing and manipulating collections.
+      These collections might need to be ordered, to be sorted, to allow duplicate values, to be immutable, 
+      to be of fixed size, and more.

@@ -538,3 +538,7 @@
          -> see DAOFactorySimple.java
          
       3.9.4 Using the Factory Method or Abstract Factory pattern with the DAO pattern
+        Let's see see how you can decouple data storage and retrieval for multiple type of objects (Emp, Dept) 
+        from multiple data stores (Oracle, MySQL) using the Factory Method or Abstract Factory patterns with the DAO pattern.
+        
+         -> see DAOFactoryAbstractMethod.java
