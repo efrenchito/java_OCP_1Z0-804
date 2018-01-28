@@ -1,0 +1,66 @@
+@REGULAREXPRESSIONS
+  import java.util.regex.Pattern;
+  import java.util.regex.Matcher;
+  import java.util.regex.PatternSyntaxException;
+  Pattern pattern = Pattern.compile(regex);
+  Matcher matcher = pattern.matcher(targetString)         
+  while(matcher.find()){ System.out.println(matcher.group()+""+matcher.start()+""+matcher.end()); }
+  matcher.replaceAll()
+  Quantifiers: ? -> 0 or 1;  * -> 0 or many;  + -> 1 or many;
+@SEARCHING,PARSING_&_BUILDSTRINGS
+  + SEARCHING
+    - indexOf();lastIndexOf(); **-1
+    - contains(String);|contains(StringBuilder) **CharSequence
+    - subSequence(int, int);|substring(); **StringIndexOutOfBoundsException
+    - split(String regex[, int limit = 0]) **non-positive as many times|0 trailing empty strings discarded
+  + REPLACING
+    - replace(char old, char new)
+    - replace(CharSequence old, CharSequence new)  **CharSequence -> (String/StringBuilders)
+    - replaceAll(String regex, String replacement) **Allows regex patterns/Only Strings, does NOT allow StringBuilders
+    [OTHER METHODS]
+    - endsWith(String suffix)
+    - startsWith(String prefix)
+    - startsWith(String prefix, int offset)
+    - compareTo(String anotherStr)
+    - compareToIgnoreCase(String anotherStr)
+    - equals(Object object)
+    - equalsIgnoreCase(String anotherString)
+  + PARSING (Scanner/StringTokenizer)
+    SCANNER
+      Scanner scan = new Scanner(File|Readable(FileReader/BufferedReader)|String);
+      scan.useDelimiter("\\s");
+      while(scan.hasNext()){ ... } -> Wathchout hasNext_() vs next_()
+      findInFile();
+      MatchResult result = scan.match(); -> result.groupCount();
+      EXCEPTIONS
+       InputMisMatchException: Thrown by a Scanner indicating that the token retrieved doesn't match the pattern for the expected type or that token's out of range
+    STRINGTOKENIZER 
+      ***Doesn't allow regex
+      Constructors -> new StringTokenizer(String str)|(String str, String delim)|(String str, String delim, boolean returnDelims)
+      Methods      -> countTokens()|hasMoreElements()|hasMoreTokens()|nextElement()|nextToken()|nextToken(String delim)
+      EXCEPTIONS
+       NullPointerException
+  + FORMAT
+    FORMATTER -> import java.util.Formatter; method format from class Formatter allow us to write formatted string to stream, file or StringBuilder objects.
+      //FormatString.java
+        import java.util.Formatter;
+          ...
+          String name = "Efren";
+          Formatter formatter = new Formatter(new File("data.txt"));
+          formatter.format("My name is %s ", name);
+          formatter.flush();
+          System.out.printf("My name is %s", name);
+        ...
+      FORMAT STRINGS: %[argument_index$][flags][width][.precision]conversion_char
+      %b -> Outputs the result as a boolean (null -> false|String NOT null -> true|boolean -> String.valueOf(booleanVal))
+      %c -> Outputs the result as a Unicode Character
+      %f -> Outputs the result as a float, double, Float, Double
+      EXCEPTIONS
+        -> java.util.MissingFormatArgumentException
+        -> java.util.IllegalFormatConversionException
+
+docs.oracle.com (essentials/regex)
+[String Literals]  -> The most basic form of pattern matching supported by this API is the match of a string literal.
+[Metha Characters] -> <([{\^-=$!|]})?*+.> To force a metacharacter to be treated as an ordinary character: \, or enclose it within \Q and \E
+
+
