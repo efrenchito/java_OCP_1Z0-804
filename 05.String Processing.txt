@@ -1,0 +1,338 @@
+05.String Processing
+  [5.1] Search, parse, and build strings (including Scanner, String-Tokenizer, StringBuilder, String, and Formatter
+  [5.2] Search, parse, and replace strings by using regular expressions, using expression patterns for matching limited 
+        to . (dot), *(star), + (plus), ?, \d, \D, \s, \S, \w, \W, \b, \B, [], ()
+  [5.3] Format strings using the formatting parameters %b, %c, %d, %f, and %s in format strings
+ 
+  This chapter covers
+    ■ How classes from the Java API (String,StringBuilder,Scanner,String-Tokenizer,Formatter) can help you search, 
+      parse, build, and replace strings
+    ■ Regular expressions and what you can do with them
+    ■ How to format strings by using format specifiers
+  
+  
+    5.1 Regular expressions
+      [5.2] Search, parse, and replace strings by using regular expressions, using expression patterns for matching limited 
+            to . (dot), *(star), + (plus), ?, \d, \D, \s, \S, \w, \W, \b, \B, [], ()
+  
+      You can use regex to find text that matches a pattern and to perform operations such as these:
+      ■ Check method arguments—Determine whether author@manning is a valid email address.
+      ■ Validate user input—Verify whether 765-981-abc is a correct phone number.
+      ■ Search usernames in a text file—Find the ones that are exactly 10 characters long, starting with a letter A 
+        and followed by 4 digits and 5 letters.
+        -> We'll see how to use metacharacters, character classes, and quantifiers in regex. 
+           You’ll see how to use them in code to search for matching data and manipulate it.     
+             
+         
+      5.1.1 What is a regular expression?
+        Regular expressions come with a syntax. With that syntax you can create a pattern to describe target search data.
+        When you describe data, you detail out its attributes or characteristics. 
+        When you specify data, you state the exact data. 
+        The regex s.n describes the data as follows:
+         ■ The first character must be s.
+         ■ Allow any character at the second position.
+         ■ The third character must be n.
+             
+      5.1.2 Character classes
+        Character classes aren’t classes defined in the Java API. The term refers to a set of characters that you can enclose within 
+        square brackets ([]). When used in a regex pattern, Java looks for exactly one of the specified characters (not words).
+        organi[sz]ed -> so you can find both organized and organised.
+        [fdn]ine     -> matches the words fine, dine, and nine.
+             
+         -> see RegexSample1.java 
+               
+         -> EXAM TIP If a matched string occupies index positions 1, 2, and 3 in a target string, 
+            method end() of class Matcher returns the value 4 for the corresponding call on end(). 
+            You can expect trick questions on this returned value on the exam.
+               
+         -> EXAM TIP If the Java Runtime engine determines that a pattern is
+            invalid, it throws the runtime exception PatternSyntaxException. On
+            the exam, when you see a question on the possible output of a string processing
+            code, examine the regex pattern for invalid values.
+               
+         ***NOTE Building a string by using the concatenation operators ( + and +=)
+            isn’t a recommended practice. Later in this chapter, you’ll see how to use
+            formatting classes and parameters such as %s and %d to include and format
+            variable values in String literal values.
+            
+        Examples of regex patterns that use simple character classes:
+          [Type]   [Pattern] [Description]
+          Simple   [agfd]    Match exactly one from a, g, f, or d
+          Range    [a-f0-7]  Match exactly one from the range a to f (both inclusive) or 0 to 7 (both inclusive)
+          Negation [^123k-m] Match exactly one character that is not 1, 2, or 3 or from the range k to m (both inclusive)
+
+      5.1.3 Predefined character classes
+        Java’s regex engine supports predefined character classes for your convenience.
+           
+         ***NOTE To use a regex pattern that includes a backslash (\), you must
+            escape the \ in the pattern by preceding it with another \. The character
+            literal \ has a special meaning; it’s used as an escape character. To use it
+            as a literal, it must be escaped.
+           
+        [Character class]  [Description]
+                 .          Any character (may or may not match line terminators)
+                \d          A digit: [0-9]
+                \D          A non digit: [^0-9]
+                \s          A whitespace character: [ space, \t (tab), \n (new line), \x0B (end of line), \f (form feed), \r (carriage) ]
+                \S          A non whitespace character [^\s]
+                \w          A word character: [a-zA-Z_0-9]
+                \W          A non word character: [^\w]
+                
+          The dot (.) is a metacharacter that matches any character. Metacharacters are special characters, which have special meanings.
+         
+           -> see RegexPredefCharClass.java
+
+             -> EXAM TIP Because String objects are immutable, calling replaceAll()
+                won’t change the contents of String referred to by the variable target-
+                String in the preceding code example. replaceAll() creates and returns
+                a new String object with the replaced values. Watch out for questions
+                based on it on the exam.
+
+      5.1.4 Matching boundaries
+        Matching boundaries can help you to limit your searches to the start or end of a word.
+          
+          [Boundary constructs]  [Description]
+                   \b             A word boundary
+                   \B             A nonword boundary
+                    ^             Beginning of a line
+                    $             End of a line
+       
+      5.1.5 Quantifiers
+        You can specify the number of occurrences of a pattern to match in a target value by using quantifiers.
+          
+          [Quantifier (Greedy)]  [Description]
+                  X?              Matching X, once or not at all
+                  X*              Matching X, zero or more times
+                  X+              Matching X, one or more times
+
+          
+        USING ? TO MATCH ZERO OR ONE OCCURRENCE
+          colou?r   -> colour|color
+          Aug(ust)? -> Aug|August
+          [bmf]?all -> all|ball|mall|fall
+           
+            -> see RegexQuantifier.java
+            
+        USING * TO MATCH ZERO OR MORE OCCURRENCES
+          fo*d      -> fd|fod|food|fooood 
+          [A-Za-z]\d*[A-Za-z] -> b234Z|A6Z|abc  
+          ***NOTE: abc -> "ab" matches, "bc" won’t match because b was already consumed for matching "ab".
+            
+          USING + TO MATCH ONE OR MORE OCCURRENCES
+            fo+d      -> fod|food|fooood
+            [A-Za-z]\d+[A-Za-z] -> b234a|A6Z
+
+      5.1.6 Java’s regex support
+        Java incorporated regex support by defining the java.util.regex package in version 1.4. 
+        Regex in Java supports Unicode as it matches against CharSequence objects. This package defines classes for matching character
+        sequences against the patterns specified by regular expressions. For this, you particularly need the Matcher and Pattern classes.
+         
+        Class Pattern is a compiled representation of a regular expression. It doesn’t define a public constructor. 
+        You can instantiate this class by using its factory method compile().
+          -> Pattern pattern = Pattern.compile("a*b");
+
+        After you create a Pattern object, you must instantiate a Matcher object, which can be used to find matching patterns in a target
+        string. Class Matcher is referred to as an engine that scans a target CharSequence for a matching regex pattern. Class Matcher
+        doesn’t define a public constructor. You can create and access a Matcher object by calling the instance method matcher() on an 
+        object of class Pattern:
+          -> Matcher matcher = pattern.matcher("aaaaab");
+           
+        With the addition of the java.util.regex package, Java also added methods, like matches(), to existing classes, like String, 
+        which matched string values with the given regular expression. However, behind the scenes, String.matches() calls method matches()
+        defined in class Pattern.
+        We’ll continue working with more examples of creating and using regex patterns, using classes String, StringBuilder, Scanner, 
+        and StringTokenizer. Class String defines multiple methods to search and replace string values based on exact and regex patterns. 
+        But class StringBuilder doesn’t support search or replace methods based on regex. You’ll see how you can use Scanner and String-
+        Tokenizer to parse and tokenize streams (such as text in a file) by using exact text or regex patterns.
+         
+        ***Note: The use of StringTokenizer is discouraged in new code. This legacy class is retained for backward compatibility. 
+           Use classes from the java.util.regex package or String.split() to get the functionality of StringTokenizer.
+ 
+    5.2 Searching, parsing, and building strings
+     [5.1] Search, parse, and build strings (including Scanner, StringTokenizer, StringBuilder, String, and Formatter)
+     [5.2] Search, parse, and replace strings by using regular expressions, using expression patterns for matching limited to . (dot), *(star), + (plus), ?, \d, \D, \s, \S, \w, \W, \b, \B, [], ()  
+     
+     Java includes multiple classes like Scanner, StringTokenizer, StringBuilder, String, and Formatter to accomplish searching, parsing, 
+     and building strings.
+   
+     5.2.1 Searching strings
+      Class String defines multiple methods to search strings for exact matches of a single character or string. 
+      These methods allow searching from the beginning of a string, or starting or ending at a specified position.
+      
+       METHOD indexOf() lastIndexOf()
+        -> see SearchIndexLastIndex.java
+        
+        -> EXAM TIP Methods indexOf() and lastIndexOf() don’t throw a compilation error or runtime exception if the search position 
+           is negative or greater than the length of the string. If no match is found, they return -1.
+           ***indexOf() searchs forward
+           ***lastIndexOf() searchs backward
+
+       METHOD contains()
+        Method contains() searches for exact matches in a string and returns true if a match is found, false otherwise.
+        *Accepts a method parameter of type CharSequence, you can pass to it both a String or a StringBuilder object.
+
+       METHOD subSequence()|substring()
+        -> EXAM TIP Methods subSequence() and substring() don’t include the character at the end position in the result string. 
+           Also, unlike methods indexOf() and lastIndexOf(), they throw the runtime exception StringIndexOutOfBoundsException 
+           for invalid start and end positions
+        
+       METHOD split()
+        Tokeninzing is the process of splitting a string, based on a separator(character|text|regex), into tokens.
+        Method split(String regex) and method split(String regex, int limit) in class String search for a matching regex pattern 
+        and split a string into an array of string values.
+        **You can limit the maximum number of tokens that you want to retrieve by using split(String regex, int limit).
+
+      5.2.2 Replacing Strings
+        Methods to replace string values, using exact matches and regex patterns:
+          replace(char old, char new)
+          replace(CharSequence old, CharSequence new)
+          replaceAll(String regex, String replacement)
+          replaceFirst(String regex, String replacement)
+
+          -> EXAM TIP Unlike replace(), replaceAll() doesn’t accept method parameters of type CharSequence. 
+             Watch out for the passing of objects of class StringBuilder to replaceAll().
+
+        OTHER METHODS     
+          -> EXAM TIP Lexicographically, a lowercase letter is greater than its equivalent
+             uppercase letter. Method compareTo() returns a negative number
+             (not necessarily –1) if the String object on which it’s called is lexicographically
+             smaller than the one it’s compared to.
+
+      5.2.3 Parsing and tokenizing strings with Scanner and StringTokenizer
+        Parsing is the process of analyzing a string to find tokens or items.
+
+        SCANNER CLASS
+          Scanner is a simple text scanner, which can parse primitive types and strings. 
+          Scanner tokenizes its input string by using a pattern, which can be a character, a string literal, or a regex. 
+          You can then use the resulting tokens, converting them to different data types.
+
+            Scanner(File source)     -> Use File as source to Scanner
+            Scanner(Readable source) -> FileReader, BufferedReader implement
+            Scanner(String source)   -> Use String as source
+
+            //ParserScanner.java
+              import java.util.Scanner;
+              ...
+                Scanner scan = new Scanner("lorem ipsum dolor sit amet");
+                scan.useDelimiter("\\d");
+                while(scan.hasNext()){
+                  System.out.println(scan.next());
+                }
+              ...
+
+            -> EXAM TIP Methods hasNext() and hasNextXxx() only return true or false but don’t advance. 
+               Only methods next() and nextXxx() advance in the input. 
+               So you’ll have to be careful or you’ll end up with a program which runs eternally.
+
+          EXCEPTION 
+           InputMisMatchException: 
+             -> Thrown by a Scanner indicating that the token retrieved doesn't match the pattern for the expected type or that token's out of range
+
+        STRINGTOKENIZER CLASS
+          You can use the StringTokenizer class to break a string into tokens. To separate the tokens you can specify the delimiter to be used 
+          either at the time of instantiating StringTokenizer or on a per-token basis. In the absence of an explicit delimiter, a whitespace is used.
+
+          -> EXAM TIP: If the delimiter used to instantiate StringTokenizer is null, the constructor
+             doesn’t throw an exception. But trying to access the resultant tokens or invoking any
+             other method on the StringTokenizer instance results in a NullPointerException:
+
+              StringTokenizer st = new StringTokenizer("start your startup", null);
+              System.out.println(st.hasMoreElements());  -> Throws java.lang.NullPointerException because delimiter is null
+
+    5.3 FORMATTING STRINGS
+      [5.3] Format strings using the formatting parameters %b, %c, %d, %f, and %s in format strings
+
+        -> see FormatingSample1.java
+
+      This section discusses formatting classes, methods, and parameters that can replace the + operator for concatenating String and other variable values. 
+      You can also write the formatted text to OutputStream, File, or String-Builder.
+        -> System.out.println("name: "+emp+" age: "+age);
+
+      5.3.1 Formatting classes
+        Class java.util.Formatter and I/O classes like PrintStream and PrintWriter define methods to format strings.
+        You can use class Formatter to write formatted strings to a file, stream, or String-Builder objects
+        You can use class System to access the standard input, standard output, and error output streams.
+
+      5.3.2 Formatting methods
+        Class Formatter defines the overloaded method format()to write a formatted string to its destination using the default or specified Locale, 
+        format string, and arguments:
+          format(String format, Object... args)
+          format(Locale l,String format, Object... args)
+        You can use class PrintStream and its overloaded methods format() and printf(), which use the default or specified Locale, format strings, and arguments:
+          format(String format, Object... args)
+          format(Locale l,String format, Object... args)
+          printf(String format, Object... args)
+          printf(Locale l, String format, Object... args)
+
+        *** Behind the scenes, method printf() simply calls method format(), so you really need to work with one method to format the strings.
+
+        -> EXAM TIP: System.out.println() can’t write formatted strings to the
+           standard output; System.out.format() and System.out.printf() can.
+
+           -> see FormatStringSample1.java
+
+      5.3.3 Defining format strings
+        To use methods format() and printf(), you need to define: 
+          • a format string that defines how to format text 
+          • an object argument list that defines what to format
+
+        %[argument_index$][flags][width][.precision]conversion_char
+        
+        FORMAT SPECIFIER ELEMENTS AND THEIR PURPOSES
+            [ELEMENT]     [OPTIONAL/REQUIRED]    [MEANING]
+          argument_index      Optional         Indicates position of the argument in the argument list. Referenced by 1$ (first), 2$ (second), and so forth.
+          flags               Optional         Set of characters that modify the output format. The set of valid flags depends on the conversion.
+          width               Optional         A non-negative decimal integer indicating the minimum number of characters to be written to the output.
+          precision           Optional         A non-negative decimal integer usually used to restict the number of characters. behavior depends on conversion.
+          conversion_char     Required         A character indicating how the argument should be formatted. The set of valid conversions depends on data type.
+
+          NOTE The conversion characters on the exam are %b, %c, %d, %f ,and %s.
+
+      5.3.4 Formatting parameter %b
+        If the target argument arg is null, then %b prints the result as false. 
+        If arg is boolean or Boolean, the result is the String returned by String.valueOf(). 
+        Otherwise, the result is true.
+          //FormatParamb.java
+            ...
+            String name = "Shreya";
+            Integer age = null;
+            boolean isShort = false;
+            System.out.format("Name %b, age %b, isShort %b", name, age, isShort);
+            //Prints: 'Name true, age false, isShort false'
+
+          -> EXAM TIP If the count of formatting parameters is more than the arguments
+             passed to methods format() or printf(), then java.util.Missing-
+             FormatArgumentException is thrown at runtime.
+               -> System.out.format("Name %b, age %b, isShort %b", name);  => Throws java.util.MissingFormatArgumentException
+
+          -> EXAM TIP You can pass any type of primitive variable or object reference to %b.
+
+      5.3.5 Formatting parameter %c
+        %c outputs the result as a Unicode character.
+
+          -> EXAM TIP You can pass only literals and variables that can be converted
+             to a Unicode character (char, byte, short, int, Character, Byte, Short,
+             and Integer) to the %c specifier. Passing variables of type boolean, long,
+             float, Boolean, Long, Float, or any other class will throw Illegal-
+             FormatConversionException.
+
+      5.3.6 Formatting parameters %d and %f
+        %f -> Allow us to format float and double values. (literal Values|float|double|Float|Double)
+          System.out.printf("[%f]", 12.12345);          //Outputs value with trailing zero
+          System.out.printf("[%010f]", 12.12345);       //Outputs value with width 10, zero padded (leading & trailing)
+          System.out.printf("[%-10f]", 12.12345);       //Value with width 10 left-justified
+          System.out.printf("[%10.2f]", 12.98765);      //Value with width 10, exactly 2 digits after decimal point
+          System.out.printf("[%,f]", 123456789.12345);  //Locale-especific grouping using 
+
+            -> EXAM TIP By default, %f prints six digits after the decimal. It also rounds
+               off the last digit. You can pass literal values or variables of type float,
+               double, Float, and Double to the format specifier %f.
+
+        %d -> Allow us to format 
+
+
+      5.3.7 Formatting parameter %s  
+        %s -> Is a general-purpose format
+          %s Can be applied to both primitive variables and object references. 
+          For primitive variables, the value will be displayed; for object references, method toString() of the object is called:
+
