@@ -1,0 +1,111 @@
+06.Exceptions and Assertions
+  [6.1] Use the throw statement and throws clause
+  [6.2] Use the try statement with multicatch and finally clauses
+  [6.3] Auto-close resources with a try-with- resources statement
+  [6.4] Create custom exceptions
+  [6.5] Test invariants by using assertions
+
+6.1 Using the throw statement and the throws clause
+    Exceptions Hierarchy
+      java.lang.Object
+        java.lang.Throwable
+          java.lang.Error
+          java.lang.Exception
+            java.lang.RuntimeException
+    Exception Types
+     UnChecked Exceptions -> refers to java.lang.Error classes & java.lang.RuntimeEcxeption classes
+     Checked Exceptions -> refers to java.lang.Throwable classes and java.lang.Exception classes that are not uncheked exceptions
+    try-catch & Exception Types
+      UncheckedException -> Doesn't need the throw statement in the body of a try-catch
+      CheckedException   -> Must be throw statement in the body of a try-catch otherwise it WON'T COMPILE
+                            CheckedExceptionClass is never thrown in body of corresponding try statement
+        //TryCatchCheckedExceptions.java
+		  import java.io.*;
+		  class TryCatchCheckedExceptions {
+		    void method6() {
+		      try {}
+		      catch (Error e) {}
+		    }
+		    void method7() {
+		      try {}
+		      catch (Exception e) {}
+		    }
+		    void method8() {
+		      try {}
+		      catch (Throwable e) {}
+		    }
+		    void method9() {
+		      try {}
+		      catch (RuntimeException e) {}
+		    }
+		    void method10(){
+		      try {
+		      }
+		      catch (FileNotFoundException e) {}  //WON'T COMPILE
+		      					                  //CheckedExcClass is never thrown in body of corresponding try statement
+		    }
+		    void method11(){
+		      boolean founded = false;
+		      try {
+		          if(!founded){
+		              throw new FileNotFoundException();  //COMPILE SUCCESSFULLY
+		          }
+		      }
+		      catch (NullPointerException e) {}
+		      catch (FileNotFoundException e) {}
+		    }
+		  }
+
+    6.1.1 Creating a method that throws a checked exception
+        //DemoException.java
+         class DemoException {
+             public void readFile(String file) throws FileNotFoundException {
+               boolean found = findFile(file);
+               if(!found){
+                 throw new FileNotFoundException("Missing File");
+               }else{
+                 //code to read file
+               }
+             }
+   
+             public boolean findFile(String file){
+               //code that returns true if file is located
+             }
+   
+           }
+    6.1.2 Using a method that throws a checked exception
+      -> EXAM TIP To use a method that throws a checked exception, you must either handle 
+         the exception or declare it to be thrown.
+        //DemoUseMethodThatThrowsException.java
+          class DemoUseMethodThatThrowsException {
+            public void readFile(String File) throws FileNotFoundException { ... }
+            void useMethodThatThrowsExc1(String name) {
+              try {
+                readFile(name);
+              }
+              catch (FileNotFoundException e) {
+               //code
+              }
+            }
+            void useMethodThatThrowsExc2(String name) throws FileNotFoundException {
+              readFile(name);
+            }
+            void useMethodThatThrowsExc3(String name) throws FileNotFoundException {
+              try {
+                readFile(name);
+              }
+              catch (FileNotFoundException e) {
+               //code
+              }
+            }
+          }
+        //AvoidCatchingOverlyBroadException
+          ...
+            try {
+              // code
+            }catch (Exception e) {
+              //It might become difficult to debug such code
+              //It might log the same message for different exceptions 
+              //or might try to handle all types of exceptions in the same way
+            }
+    6.1.3 Creating and using a method that throws runtime exception or errors

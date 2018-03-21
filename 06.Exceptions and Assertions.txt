@@ -1,0 +1,759 @@
+06.Exceptions and Assertions
+  [6.1] Use the throw statement and throws clause
+  [6.2] Use the try statement with multicatch and finally clauses
+  [6.3] Auto-close resources with a try-with- resources statement
+  [6.4] Create custom exceptions
+  [6.5] Test invariants by using assertions
+
+  Exception handling is covered in both the OCA Java SE 7 Programmer I exam (1Z0-803) and OCP Java SE 7 Programmer II exam 
+  (1Z0-804). This chapter covers exception-handling topics that are specific to the latter exam. Assertions are covered only by 
+  the second exam. 
+  This chapter covers:
+    ■ The throw statement and throws clause
+	  ■ The try statement with multi-catch and finally clauses (new in Java 7)
+	  ■ Auto-closing resources with a try-with-resources statement (new in Java 7)
+	  ■ Custom exceptions
+	  ■ Testing invariants by using assertions
+
+    6.1 Using the throw statement and the throws clause
+      Exceptions Hierarchy
+        java.lang.Object
+          java.lang.Throwable
+            java.lang.Error
+            java.lang.Exception
+              java.lang.RuntimeException
+      ■ Exception classes—Refers to Throwable class and all its subclasses
+      ■ Error classes—Refers to Error class and all its subclasses
+      ■ Runtime exception classes—Refers to RuntimeException class and all its subclasses
+      ■ Unchecked exception classes—Refers to runtime exception classes and error classes
+      ■ Checked exceptions classes—Refers to all exception classes other than the unchecked exception classes. 
+        Class Throwable and any of its subclasses that aren’t a subclass of either Error or RuntimeException are checked exceptions
+  
+      Imagine that you’re assigned the task of finding a specific book, and then reading and explaining its contents 
+      to a class of students.
+        //teachClass.java
+          void teachClass() throws BookNotFoundException {
+            boolean bookFound = locateBook();
+            if(!bookFoun){
+              throw new BookNotFoundException();
+            }else{
+              readBook();
+              explainContents();
+            }
+          }
+
+        The preceding example helps identify a situation when you’d want a method to throw an exception, rather than handling it 
+        itself. It shows you how to use and compare the statement throw and clause throws—to throw exceptions and to signal that 
+        a method might throw an exception
+
+        -> EXAM TIP Syntactically, you don’t always need a combination of the
+        throw statement and throws clause to create a method that throws an
+        exception (checked or unchecked). You can replace the throw statement
+        with a method that throws an exception.
+
+      6.1.1 Creating a method that throws a checked exception
+        class DemoException {
+          public void readFile(String file) throws FileNotFoundException {
+            boolean found = findFile(file);
+            if(!found){
+              throw new FileNotFoundException("Missing File");
+            }else{
+              //code to read file
+            }
+          }
+
+          public boolean findFile(String file){
+            //code that returns true if file is located
+          }
+
+        }
+      6.1.2 Using a method that throws a checked exception
+        To use a method that throws a checked exception, you must do one of the following:
+          ■ Handle the exception—Enclose the code within a try block and catch the thrown exception.
+          ■ Declare it to be thrown—Declare the exception to be thrown by using the throws clause.
+          ■ Handle and declare—Implement both of the preceding options together.
+
+          -> EXAM TIP To use a method that throws a checked exception, you must either handle 
+          the exception or declare it to be thrown.
+
+          class DemoUseMethodThatThrowsException {
+           public void readFile(String File) throws FileNotFoundException { ... }
+           void useMethodThatThrowsExc1(String name) {
+             try {
+               readFile(name);
+             }
+             catch (FileNotFoundException e) {
+               //code
+             }
+           }
+           void useMethodThatThrowsExc2(String name) throws FileNotFoundException {
+            readFile(name);
+           }
+           void useMethodThatThrowsExc3(String name) throws FileNotFoundException {
+             try {
+               readFile(name);
+             }
+             catch (FileNotFoundException e) {
+               //code
+             }
+           }
+            ...
+
+        Catching an overly broad exception
+            try {
+              // code
+            }catch (Exception e) {
+              // code
+            }
+          The preceding catch block will silently catch all types of runtime exceptions also. 
+          It might become difficult to debug such code—it might log the same message for different exceptions 
+          or might try to handle all types of exceptions in the same way, which might not have been the intent.
+
+      6.1.3 Creating and using a method that throws runtime exception or errors
+        -> EXAM TIP Adding runtime exceptions or errors to a method’s declaration isn’t required. 
+           A method can throw a runtime exception or error irrespective of whether its name is included in its throws clause.
+
+        Common Errors and Exceptions
+         Exceptions
+           IOException
+             FileNotFoundException
+           IllegalClassFormatExceptio
+         Runtime Exceptions
+           ArrayIndexOutOfBoundsException 
+           IndexOutOfBoundsException
+           ClassCastException
+           IllegalArgumentException
+           IllegalStateException
+           NullPointerException
+           NumberFormatException
+         Error
+           ExceptionInInitializerError
+           StackOverflowError
+           NoClassDefFoundError
+           OutOfMemoryError
+
+      6.1.4 Points to note while using the throw statement and the throws clause
+        A METHOD CAN THROW A SUBCLASS OF CHECKED EXCEPTION MENTIONED IN ITS THROWS CLAUSE, NOT ITS SUPERCLASS
+          ...
+           public void readFile(String file) throws IOException {
+             ...
+             if(!found) throw new FileNotFoundException("Missing File");
+           }
+        A METHOD CAN HANDLE THE EXCEPTION AND STILL DECLARE IT TO BE THROWN
+          ...
+           void useReadFile3(String name) throws FileNotFoundException {
+             try {
+               readFile(name);
+             }
+             catch (FileNotFoundException e) {
+               //code
+             }
+           }
+        A METHOD THAT DECLARES A CHECKED EXCEPTION TO BE THROWN MIGHT NOT ACTUALLY THROW IT
+          ...
+           public void readFile(String file) throws FileNotFoundException {
+            System.out.println("readFile:" + file);
+            }
+        YOU CAN RETHROW EXCEPTIONS WITH MORE-INCLUSIVE TYPE CHECKING
+          For checked exceptions, a method can’t throw a superclass of the exception included in its:
+           ...
+           public static void main(String args[]) throws IOException, SQLException {
+             ...
+             try {
+               if (source.equals("DBMS"))
+                throw new SQLException();
+             else
+               throw new IOException();
+             }catch (Exception e) {
+                throw e;  //Catch block rethrows caught exception
+                //throw new Exception();  //Won't Compile
+             }
+        A METHOD CAN DECLARE TO THROW ALL TYPES OF EXCEPTIONS, EVEN IF IT DOESN’T
+          class ThrowExceptions {
+            void method1() throws Error {}
+            void method2() throws Exception {}
+            void method3() throws Throwable {}
+            void method4() throws RuntimeException {}
+            void method5() throws FileNotFoundException {}
+          }
+
+        Though a try block can define a handler for unchecked exceptions not thrown by it,
+        it can’t do so for checked exceptions (other than Exception)
+         ...
+          void method10() {
+            try {}
+            catch (FileNotFoundException e) {}  //WON'T COMPILE
+            // -> CheckedExceptionClass is never thrown in body of corresponding try statement
+            
+          }
+        ...
+          void method11() {
+            boolean
+            try {
+              throw new FileNotFoundException("Missing File");
+            }catch (FileNotFoundException e) { //COMPILE SUCCESSFULLY
+              e.printStackTrace();
+            }
+          }
+          -> EXAM TIP: try block can’t define a catch block for a checked exception (other than Exception) 
+          if the try block doesn’t throw that checked exception or uses a method that declares to throw that 
+          checked exception.
+    6.2 Creating custom exceptions
+      The name of an exception can convey a lot of information to other developers or users, which is one of the main reasons for 
+      defining a custom exception. A custom exception can also be used to communicate a more descriptive message.
+        FileNotFoundException -> was probably thrown by code that couldn’t locate a specified file.
+        ArrayIndexOutOfBoundsException -> thrown by code that tried to access an array at an index position out of its bounds.
+
+      Custom exceptions also help you restrict the escalation of implementing specific exceptions to higher layers.  
+      For example, data access code on your server that accesses persistent data may throw a SQLException. But users connecting
+      to your server should not be returned this exception. You may catch SQLException and throw another checked or unchecked
+      exception. If you can’t find an appropriate existing exception, create one!
+
+      6.2.1 Creating a custom checked exception
+       To create custom checked exceptions, subclass java.lang.Exception or its subclasses (which aren’t subclasses of 
+       RuntimeException). Even though you can extend class java.lang.Throwable to create your own exceptions, it isn’t 
+       recommended.
+
+        -> EXAM TIP. Don’t extend class java.lang.Throwable to create your own exceptions, even though you can. 
+        Class Throwable is the superclass of classes java.lang.Error and java.lang.Exception. The exception handler
+        for this class will catch all types of errors and exceptions.
+
+        //HierarchyOfExceptions&ErrorClasses
+          java.lang.object
+            java.lang.Throwable 
+                java.lang.Error
+                java.lang.Exception
+                  java.lang.RuntimeException
+        //CustomCheckedException
+          class LoginException extends Exception { 
+            public LoginException(){
+              super();
+            }
+
+            public LoginException(String message){
+              super(message);
+            }
+
+          }
+
+          class UserActivity {
+            public void login(String user, String pwd) throws LoginException {
+              if(!findInDatabase(user, pwd)){
+                throw new LoginException("Invalid username or password");
+              }
+            }
+
+            private boolean findInDatabase(String user, String pwd){
+              //implementation code
+              return boolean_value;
+            }
+          }
+
+      6.2.2 Creating a custom unchecked exception
+        Class Error, class RuntimeException, and their derived classes are collectively referred to as unchecked exception 
+        classes. You can subclass java.lang.RuntimeException to create a custom runtime exception.
+        The only change is that (though allowed) now you no longer need to include the throws clause in the method’s declaration
+
+        //CustomUncheckedException
+          class LoginException extends RuntimeException { 
+            public LoginException(){
+              super();
+            }
+
+            public LoginException(String message){
+              super(message);
+            }
+
+          }
+
+          class UserActivity {
+            public void login(String user, String pwd){
+              if(!findInDatabase(user, pwd)){
+                throw new LoginException("Invalid username or password");
+              }
+            }
+
+            private boolean findInDatabase(String user, String pwd){
+              //implementation code
+              return boolean_value;
+            }
+          }
+        
+        To create custom Error classes, you can subclass java.lang.Error by extending it. But Error classes represent serious 
+        exceptional conditions, which shouldn’t be thrown programmatically.
+    6.3 Overriding methods that throw exceptions
+      In this section, you’ll work through compilation issues that occur with overridden and overriding methods, when either of 
+      them declares to throw a checked exception. If an overridden method declares to throw a checked exception, the overriding 
+      method can choose to declare to not throw any checked exception, throw the same exception, or throw a more specific 
+      exception. The overriding method can’t declare to throw a more generic checked exception.
+
+      -> EXAM TIP With overriding and overridden methods, it's all about which checked exceptions an overridden method and an 
+          overriding method declare, not about the checked exceptions both actually throw.
+      
+
+      -> RULE 1: A BASE CLASS METHOD DOESN’T DECLARE TO THROW A CHECKED EXCEPTION.
+        IF [RULE 1] AN OVERRIDING METHOD IN THE DERIVED CLASS CAN’T DECLARE TO THROW A CHECKED EXCEPTION
+        //BaseDoesntThrowCheckedExc
+          class Base {
+            public void aMethod() {}
+            public void noRuntimeException() {}
+          }
+          class Derived extends Base {
+            public void aMethod() throws Exception {}  //Won't Compile
+            public void noRuntimeException() throws RuntimeException {} //This lines compiles successfully
+          }
+      -> A BASE CLASS METHOD DECLARES TO THROW A CHECKED EXCEPTION
+        -> RULE 2: CAN CHOOSE NOT TO DECLARE TO THROW ANY CHECKED EXCEPTION
+          If a base class method declares to throw a checked exception, an overriding method in the derived class[RULE 2]
+          //ChooseThrowAnyCheckedExc...
+            class Base {
+              public void aMethod() throws IOException {}
+              public void withRuntimeException() throws RuntimeException {}
+            }
+            class Derived1 extends Base {
+              public void aMethod() {}
+              public void withRuntimeException() {}
+            }
+        -> RULE 3: CANNOT DECLARE TO THROW A SUPERCLASS OF THE EXCEPTION
+          If a base class method declares to throw a checked exception, an overriding method in the derived class
+          [RULE 3] thrown by the one in the base class
+          //CannotThrowSuperclassExc...
+            class Base {
+              public void aMethod() throws IOException {}
+              public void withRuntimeException() throws NullPointerException {}
+            }
+            class Derived2 extends Base {
+              public void aMethod() throws Exception {} //Won't compile
+              public void withRuntimeException() throws RuntimeException{}
+            }
+        -> RULE 4. CAN DECLARE TO THROW THE SAME EXCEPTION
+          If a base class method declares to throw a checked exception, an overriding method in the derived class [RULE 4]
+          //CanThrowSameExc...
+            class Base {
+              void aMethod() throws IOException {}
+              void methodUncheckedEx() throws Error {}
+            }
+            class Derived3 extends Base {
+              void aMethod() throws IOException {}
+              void methodUncheckedEx() throws NullPointerException {}
+            }
+        -> RULE 5: CAN DECLARE TO THROW A DERIVED CLASS OF THE EXCEPTION
+          If a base class method declares to throw a checked exception, an overriding method in the derived class [RULE 5] thrown 
+          by the one in the base class
+          //CanThrowDerivedExc...
+            class Base {
+              void aMethod() throws IOException {}
+            }
+            class Derived4 extends Base {
+              void aMethod() throws FileNotFoundException {}
+            }
+    6.4 Using the try statement with multi-catch and finally
+      Starting with Java 7, you can catch multiple, unrelated exceptions with one handler, also called a multi-catch
+      The multi-cath block defines code that can handle the defined Exception Classes (or any of their subclasses).
+
+      6.4.1 Comparing single-catch handlers and multi-catch handlers
+        //single-catch.java
+          try {
+          }
+          catch (fileNotFoundException e){
+          //log exception
+          }
+          catch (MyCustomException e){
+          //log exception
+          }
+          catch (NumberFormatException e){
+          //log exception
+          }
+        //multi-catch.java
+          try {
+          }
+          catch (FileNotFoundException | MyCustomException | NumberFormatException e){
+          //log exception
+          }
+      6.4.2 Handling multiple exceptions in the same exception handler
+        BASIC SYNTAX OF MULTI-CATCH BLOCK
+         To catch multiple exceptions in a single handler, just separate the different exception types with a vertical bar (|).
+          //MultiCatch.java
+            class MultiCatch {
+              void myMethod(Connection con, String fileName) {
+                try {
+                  File file = new File(fileName);
+                  FileInputStream fin = new FileInputStream(file);
+                  Statement stmt = con.createStatement();
+                }catch (FileNotFoundException | SQLException e) {
+                  System.out.println(e.toString());
+                }
+              }
+            }
+        FINALLY BLOCK CAN FOLLOW MULTI-CATCH BLOCK
+          //MultiCatchWithFinally.java
+            class MultiCatchWithFinally {
+              void myMethod(Connection con, String fileName) {
+                try {
+                  File file = new File(fileName);
+                  FileInputStream fin = new FileInputStream(file);
+                  Statement stmt = con.createStatement();
+                }catch (FileNotFoundException | SQLException e) {
+                  System.out.println(e.toString());
+                }finally {
+                  System.out.println("finally");
+                }
+              }
+            }    
+        EXCEPTIONS THAT YOU CATCH IN A MULTI-CATCH BLOCK CAN’T SHARE AN INHERITANCE RELATIONSHIP
+          //MultiCatch.java
+            class MultiCatch {
+              void myMethod(Connection con, String fileName) {
+                try {
+                  File file = new File(fileName);
+                  FileInputStream fin = new FileInputStream(file);  //Maythrow FileNotFoundException
+                  fin.read(); //May throw IOException
+                  Statement stmt = con.createStatement(); //May throw SQLException
+                }catch (IOException| FileNotFoundException | SQLException e) {  //Fails to compile
+                    // -> Alternatives in a multi-catch statement cannot be related by subclassing
+                  System.out.println(e.toString());
+                }
+              }
+            }
+          NOTE: If you catch a superclass exception before a derived class exception, the code won’t compile.
+           This is not the case, in multi-catch alternatives just cannot have inheritance relationship within alternatives
+        COMBINING MULTI-CATCH AND SINGLE-CATCH BLOCKS
+          //MultiAndSingleCatch
+            class MultiAndSingleCatch {
+              void myMethod(Connection con, String fileName) {
+                try {
+                  ..  //Code that may throw IOException, FileNotFoundException, or SQLException
+                }
+                catch (FileNotFoundException e) {}  //Catch FileNotFoundException or any of its subclasses
+                catch (IOException | SQLException e) {} //Catch IOException and SQLException or any of their subclasses 
+                                                        //(except for FileNotFoundException or its subclasses).
+                }
+            }
+        USING A SINGLE EXCEPTION VARIABLE IN THE MULTI-CATCH BLOCK
+          It’s easy to overlook that even though a multi-catch handler defines multiple exception types, 
+          it must use only one variable.
+            catch (SQLException | IOException e ) {...}
+            catch (SQLException el | IOException e2 ) {...} //Won't Compile
+        IN A MULTI-CATCH BLOCK, VARIABLE E IS IMPLICITLY FINAL
+          In a multi-catch block, the variable that accepts the exception object is implicitly final. A final variable can’t 
+          be reassigned a value. So if you try to reassign a value to the variable of the multi-catch exception handler.
+          //VariableEIsImplicitlyFinal.java
+            class VariableEIsImplicitlyFinal {
+              void myMethod(Connection con, String fileName) {
+                try {
+                ..
+                }
+                catch (IOException| SQLException e) {
+                  e = new FileNotFoundException();
+                }
+              }
+            }
+        TYPE OF EXCEPTION VARIABLE IN A MULTI-CATCH BLOCK
+          In a multi-catch block, the type of the reference variable that accepts the exception object is a 
+          common base class of all the exception types mentioned in a multi-catch block.
+          //TypeOfExceptionVariableInMultiCatch.java
+            class TypeOfExceptionVariableInMultiCatch {
+              public static void main(String args[]) {
+                try {
+                  int a = 10;
+                  if (a <= 10)throw new Exception1();
+                   else throw new Exception2();
+                }catch (IOException | Exception ex) {
+                  System.out.println(ex.info());
+                }
+              }
+            }
+
+    6.5 Auto-closing resources with a try-with-resources statement
+      [6.3] Auto-close resources with a try-with-resources statement
+
+        try{
+          FileInputStream fis = new FileInputStream();
+          /* other code */
+
+        }finally{
+          if(fis != null)
+            try{ fis.close(); }
+            catch(Exception e){ /*...*/ }
+
+        }
+      6.5.1 How to use a try-with-resources statement
+        A resource is an object such as file handlers and database or network 
+        connections, which should be closed after it’s no longer required.
+        A resource must implement the java.lang.AutoCloseable interface or any of its subinterfaces to be
+        eligible to be declared in a try-with-resources statement.    
+        class AutoClose {
+          void readFileContents(String name) /*[3] throws IOException*/{
+            File file = new File(fileName);
+            try(FileInputStream fis = new FileInputStream(file)){
+              //.. some code
+          /*[1]
+            }catch(FileNotFoundException e) { //Wont Compile fis.close() may throw an IoException */
+          /*[2]
+            }catch(IOException e){
+              System.out.println(e.toString());
+            }*/
+          }
+        }
+        NOTE: FileInputStream implements java.io.Closeable, which, starting with Java 7, 
+        extends java.lang.AutoCloseable. So FileInputStream is a valid resource to be used by the try statement
+      6.5.2 Suppressed exceptions
+        In a try-with-resources statement, if both the code in the try block and close() throw an exception, 
+        the exception thrown by close() is suppressed by the exception thrown by the try block.
+        -> The resources initialized by the try-with-resources statement are automatically closed, just before the end of 
+           execution of the try block.
+          //SuppressedExceptions(1)
+            //For the code at /*1*/, the try-with-resources statement creates a RiverRaft instance. 
+            //For the code at /*2*/, method crossRapid() throws an exception, but the try-with-resources
+            //statement executes close() /*3*/ before passing the control to the exception handler.
+            class RiverRaft implements AutoCloseable {
+              public RiverRaft() throws Exception {
+                System.out.println("Start raft");
+              }
+              public void crossRapid() throws Exception {
+                System.out.println("Cross rapid");
+                throw new Exception("Cross Rapid exception");
+              }
+              public void close() throws Exception {
+                System.out.println("Reach river bank");
+              }
+            } 
+            public class SuppressedExceptions {
+              public static void main(String[] args) throws Exception {
+               try ( RiverRaft raft = new RiverRaft(); ) {  /*1*/
+                  /*2*/ raft.crossRapid();  //Method crossRapid() throws Exception.
+                  /*3*/ // -> close() called on raft, before control is transferred to exception handler
+                }
+                catch (Exception e) {
+                  System.out.println("Exception caught:" + e);
+                }
+              }
+            }
+            //-> OUTPUT: 
+            //  Start raft
+            //  Cross rapid
+            //  Reach river bank
+            //  Exception caught:java.lang.Exception: Cross Rapid exception
+          //SuppressedExceptions(2)
+            //For the code at /*1*/, the try-with-resources statement creates a RiverRaft instance. 
+            //For the code at /*2*/, method crossRapid() throws an exception, but the try-with-resources
+            //statement executes close() /*3*/ before passing the control to the exception handler.
+            class RiverRaft implements AutoCloseable {
+              public RiverRaft() throws Exception {
+                System.out.println("Start raft");
+              }
+              public void crossRapid() throws Exception {
+                System.out.println("Cross rapid");
+                throw new Exception("Cross Rapid exception");
+              }
+              public void close() throws Exception {
+                System.out.println("Reach river bank");
+                throw new Exception("Close exception");
+              }
+            } 
+            public class SuppressedExceptions {
+              public static void main(String[] args) throws Exception {
+               try ( RiverRaft raft = new RiverRaft(); ) {  /*1*/
+                  /*2*/ raft.crossRapid();  //Method crossRapid() throws Exception.
+                  /*3*/ // -> close() called on raft, before control is transferred to exception handler
+                }
+                catch (Exception e) {
+                  System.out.println("Exception caught:" + e);
+                }
+              }
+            }
+            //-> OUTPUT: 
+            //  Start raft
+            //  Cross rapid
+            //  Reach river bank
+            //  Exception caught:java.lang.Exception: Cross Rapid exception
+            //***Previous code snippets looks identical
+            //***This exception was suppressed by the exception thrown by crossRapid().
+            //***This is a new automatic resource management feature in Java 7.
+            //***Even though the exception thrown by close() is suppressed in the preceding code,
+            //***it’s associated with the exception thrown by crossRapid(). You can retrieve the suppressed exceptions 
+            //***by calling getSuppressed() on the exception that has suppressed the other exceptions.
+            //***The getSuppressed() method returns an array containing all of the exceptions 
+            //***that were suppressed in order to deliver the exception thrown by crossRapid().
+          //SuppressedExceptions(3)
+            public class SuppressedExceptions {
+              public static void main(String[] args) throws Exception {
+                try ( RiverRaft raft = new RiverRaft(); ) {
+                raft.crossRapid();
+                }catch (Exception e) {
+                  System.out.println("Exception caught:" + e);
+                  Throwable[] exs = e.getSuppressed();
+                  if (exs.length>0)
+                  System.out.println(exs[0]);
+                }
+              }
+            }
+            class RiverRaft implements AutoCloseable {
+              public RiverRaft() throws Exception {
+                System.out.println("Start raft");
+              }
+              public void crossRapid() throws Exception {
+                System.out.println("Cross rapid");
+                throw new Exception("Cross Rapid exception");
+              }
+              public void close() throws Exception {
+                System.out.println("Reach river bank");
+                throw new Exception("Close exception");
+              }
+            }
+        -> EXAM TIP Though not required, I’ve deliberately used a semicolon (;)
+           after declaring and initializing raft in the preceding code. Watch out for
+           questions on the exam that include or exclude a semicolon at the end
+           of the resource defined by a try-with-resources statement. A try-withresources
+           statement can declare multiple resources, which are separated by
+           a semicolon. After the last resource declaration, a semicolon is optional.
+        -> EXAM TIP In a try-with-resources statement, when the code enclosed
+           within the try body (try minus its initialization code) throws an exception,
+           followed by an exception thrown by the try-with-resources statement
+           (which implicitly calls method close()), then the latter exception
+           is suppressed. getSuppressed() never returns null. If there aren’t any
+           suppressed expressions, the length of the returned array is 0.
+      6.5.3 The right Ingredients
+        Working with a try-with-resources statement can be tricky because it involves several points to be taken care of.    
+        DECLARING AND INITIALIZING RESOURCES
+          -> Resources Must be initialized
+            void copyFileContents(String inFile, String outFile) throws IOException{
+              try (FileInputStream fin; FileOutputStream fout;) {  //Won’t compile; resources must be initialized
+                //..rest of the code
+              }
+            }
+          -> It's ok initialize to NULL
+            void copyFileContents(String inFile, String outFile) throws IOException{
+              try (FileInputStream fin = null; FileOutputStream fout = null;){ //Will compile successfully
+                //..rest of the code
+              }
+            }
+          -> Try-with-resources are final
+            void copyFileContents(String inFile, String outFile) throws IOException{
+              try (FileInputStream fin = null; FileOutputStream fout = null;){
+                fin = new FileInputStream(inFile);  //Won’t compile; you can’t reassign another value to fin
+                //..rest of the code
+              }
+            }
+            ** EXAM TIP The variables defined in a try-with-resources statement are implicitly final.
+        SCOPE OF THE RESOURCE DECLARED BY TRY-WITH-RESOURCES IS LIMITED TO IT
+          The resource declared by try-with-resources is closed just before the completion of the try block. 
+          Also, its scope is limited to the try block.
+            class AutoClose {
+              void copyFileContents(String inFile, String outFile) throws IOException{
+                try (FileInputStream fin = new FileInputStream(inFile); FileOutputStream fout = new FileOutputStream(outFile)){
+                byte [] buffer = new byte[1024];
+                int i = 0;
+                while ((i = fin.read(buffer)) != -1)
+                  fout.write(buffer,0,i);
+                }
+                finally {
+                  fout = new FileOutputStream(inFile); 
+                  //***Won’t compile; code outside try block can’t access variable fout.
+                }
+              }
+            }
+        A SEMICOLON MIGHT NOT FOLLOW THE LAST RESOURCE DECLARED BY TRY STATEMENT
+          -> WITHOUT SEMICOLON
+            class AutoClose {
+              void copyFileContents(String inFile, String outFile) throws IOException{
+                try (FileInputStream fin = new FileInputStream(inFile); FileOutputStream fout = new FileOutputStream(outFile)){
+                  //..code
+                }
+              }
+            }
+          -> WITH SEMICOLON
+            class AutoClose {
+              void copyFileContents(String inFile, String outFile) throws IOException{
+                try (FileInputStream fin = new FileInputStream(inFile); FileOutputStream fout = new FileOutputStream(outFile);){
+                  //..code
+                }
+              }
+            }
+        RESOURCES MUST IMPLEMENT JAVA.IO.AUTOCLOSEABLE OR ITS SUBINTERFACES (DIRECTLY OR INDIRECTLY)
+          ->ResourcesImplementAutoCloseable
+            /*MyAutoCloseableResimplements AutoCloseable, so it can be used in try-with-resources*/ 
+            class MyAutoCloseableRes implements AutoCloseable{  
+              
+
+              MyAutoCloseableRes() {
+                System.out.println("Constructor called");
+              }
+
+              /*MyAutoCloseableRes implements the only method, close(), defined by AutoCloseable.*/
+              public void close() {
+                System.out.println("Close called");
+              }
+            }
+            class AutoClose2 {
+              void useCustomResources() {
+
+                /*An objectof MyAutoCloseableRes can be used in try-withresources*/
+                try (MyAutoCloseableRes res = new MyAutoCloseableRes();){
+                  System.out.println("within try-with-resources");
+                }
+                /*Try block doesn’t catch any exception, because no method of MyAutoCloseableRes throws exception*/
+                finally {
+                  System.out.println("finally");
+                }
+              }
+            }
+            class Test {
+              public static void main(String args[]) {
+                new AutoClose2().useCustomResources();
+              }
+            }
+            //OUTPUT: 
+            // Constructor called
+            // within try-with-resources
+            // Close called
+            // finally
+        DEFINITION OF INTERFACES JAVA.LANG.AUTOCLOSEABLE AND JAVA.IO.CLOSEABLE
+          -> AutoCloseable
+            package java.lang;
+            public interface AutoCloseable {
+              void close() throws Exception;
+            }
+          -> Closeable
+            //Method close(), which implements the Closeable interface
+            //won’t be able to throw exceptions that are broader than IOException
+            package java.io;
+            public interface Closeable extends AutoCloseable {
+              public void close() throws IOException;
+            }
+        THE RESOURCES DECLARED WITH TRY-WITH-RESOURCES ARE CLOSED IN THE REVERSE ORDER OF THEIR DECLARATION      
+          //ReverseOrderDeclaration
+            class MyResource implements AutoCloseable{
+              String name;
+              MyResource(String name) {
+                this.name = name;
+                System.out.println("Created:"+name);
+              }
+              public void close() {
+                System.out.println("Closed:"+name);
+              }
+            }
+            class TestAutoCloseOrder {
+              public static void main(String args[]) {
+                try (MyResource res1 = new MyResource("1"); MyResource res2 = new MyResource("2")) {
+                  System.out.println("within try-with-resources");
+                }
+                finally {
+                  System.out.println("finally");
+                }
+              }
+            }
+            //OUTPUT: 
+            // Created:1
+            // Created:2
+            // within try-with-resources
+            // Closed:2
+            // Closed:1
+            // finally
+          -> EXAM TIP The resources declared with the try-with-resources are closed
+             in the reverse order of their declaration.  
+    6.6 Using Assertions
+      In previous sections, we covered exceptions and worked with how the exception handlers enable you to recover from 
+      exceptional conditions during the execution of your program. In the next section, you’ll see how the assertions enable you 
+      to test and debug your assumptions and flow control during the development of your code.
+      
